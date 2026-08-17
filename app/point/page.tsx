@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -24,19 +24,72 @@ type Pedido = {
 };
 
 export default function PointJM() {
+  const router = useRouter();
+
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState<number | null>(null);
+  const [verificandoLogin, setVerificandoLogin] = useState(true);
+
+  // =========================
+  // VERIFICAR LOGIN
+  // =========================
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function verificarLogin() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.replace("/login");
+        return;
+      }
+
+      if (ativo) {
+        setVerificandoLogin(false);
+      }
+    }
+
+    verificarLogin();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          router.replace("/login");
+        }
+      }
+    );
+
+    return () => {
+      ativo = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
+  // =========================
+  // CARREGAR PEDIDOS
+  // =========================
 
   async function carregarPedidos() {
     const { data, error } = await supabase
       .from("pedidos")
       .select("*")
       .eq("status", "em_entrega")
-      .order("criado_em", { ascending: false });
+      .order("criado_em", {
+        ascending: false,
+      });
 
     if (error) {
-      console.error(error);
+      console.error(
+        "Erro ao carregar pedidos:",
+        error
+      );
+
       setCarregando(false);
       return;
     }
@@ -44,6 +97,10 @@ export default function PointJM() {
     setPedidos(data || []);
     setCarregando(false);
   }
+
+  // =========================
+  // MARCAR COMO ENTREGUE
+  // =========================
 
   async function marcarEntregue(id: number) {
     setAtualizando(id);
@@ -54,17 +111,27 @@ export default function PointJM() {
       .eq("id", id);
 
     if (error) {
-      console.error(error);
+      console.error(
+        "Erro ao atualizar pedido:",
+        error
+      );
+
       setAtualizando(null);
       return;
     }
 
     setPedidos((atuais) =>
-      atuais.filter((pedido) => pedido.id !== id)
+      atuais.filter(
+        (pedido) => pedido.id !== id
+      )
     );
 
     setAtualizando(null);
   }
+
+  // =========================
+  // MONTAR ENDEREÇO
+  // =========================
 
   function montarEndereco(pedido: Pedido) {
     return [
@@ -80,9 +147,12 @@ export default function PointJM() {
       .join(", ");
   }
 
+  // =========================
+  // ABRIR GOOGLE MAPS
+  // =========================
+
   function abrirRota(pedido: Pedido) {
     const endereco = montarEndereco(pedido);
-
     const destino = encodeURIComponent(endereco);
 
     window.open(
@@ -91,21 +161,46 @@ export default function PointJM() {
     );
   }
 
+  // =========================
+  // CARREGAR PEDIDOS
+  // APÓS LOGIN
+  // =========================
+
   useEffect(() => {
-    carregarPedidos();
-  }, []);
+    if (!verificandoLogin) {
+      carregarPedidos();
+    }
+  }, [verificandoLogin]);
+
+  // =========================
+  // VERIFICANDO LOGIN
+  // =========================
+
+  if (verificandoLogin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-6">
+        <div className="rounded-3xl bg-white p-8 text-center shadow">
+          <div className="text-4xl">🔐</div>
+
+          <p className="mt-3 font-black text-zinc-900">
+            Verificando acesso...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // =========================
+  // POINT JM
+  // =========================
 
   return (
     <main className="min-h-screen bg-zinc-100 p-4 sm:p-6">
-
       <div className="mx-auto max-w-2xl">
 
-        {/* ========================= */}
         {/* CABEÇALHO */}
-        {/* ========================= */}
 
         <div className="mb-6">
-
           <h1 className="text-3xl font-black text-zinc-900">
             POINT JM
           </h1>
@@ -114,11 +209,19 @@ export default function PointJM() {
             Entregas em andamento
           </p>
 
+          <button
+            type="button"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.replace("/login");
+            }}
+            className="mt-4 rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
+          >
+            Sair
+          </button>
         </div>
 
-        {/* ========================= */}
         {/* CARREGANDO */}
-        {/* ========================= */}
 
         {carregando && (
           <div className="rounded-3xl bg-white p-6 shadow">
@@ -126,197 +229,159 @@ export default function PointJM() {
           </div>
         )}
 
-        {/* ========================= */}
         {/* NENHUMA ENTREGA */}
-        {/* ========================= */}
 
-        {!carregando && pedidos.length === 0 && (
-          <div className="rounded-3xl bg-white p-8 text-center shadow">
+        {!carregando &&
+          pedidos.length === 0 && (
+            <div className="rounded-3xl bg-white p-8 text-center shadow">
+              <div className="text-4xl">
+                🛵
+              </div>
 
-            <div className="text-4xl">
-              🛵
+              <p className="mt-3 font-bold text-zinc-900">
+                Nenhuma entrega agora
+              </p>
+
+              <p className="mt-1 text-sm text-zinc-500">
+                Quando um pedido for enviado para
+                entrega, ele aparecerá aqui.
+              </p>
             </div>
+          )}
 
-            <p className="mt-3 font-bold text-zinc-900">
-              Nenhuma entrega agora
-            </p>
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Quando um pedido for enviado para entrega,
-              ele aparecerá aqui.
-            </p>
-
-          </div>
-        )}
-
-        {/* ========================= */}
         {/* ENTREGAS */}
-        {/* ========================= */}
 
         <div className="space-y-5">
+          {pedidos.map((pedido) => (
+            <div
+              key={pedido.id}
+              className="rounded-3xl bg-white p-6 shadow"
+            >
 
-          {pedidos.map((pedido) => {
+              {/* PEDIDO */}
 
-            const enderecoCompleto =
-              montarEndereco(pedido);
+              <div>
+                <p className="text-xs font-black text-zinc-400">
+                  PEDIDO #{pedido.id}
+                </p>
 
-            return (
-              <div
-                key={pedido.id}
-                className="rounded-3xl bg-white p-6 shadow"
-              >
+                <h2 className="mt-1 text-2xl font-black text-zinc-900">
+                  {pedido.nome}
+                </h2>
 
-                {/* ========================= */}
-                {/* PEDIDO */}
-                {/* ========================= */}
+                {pedido.whatsapp && (
+                  <p className="mt-1 text-sm text-zinc-500">
+                    📱 {pedido.whatsapp}
+                  </p>
+                )}
+              </div>
 
-                <div>
+              {/* ENDEREÇO */}
 
-                  <p className="text-xs font-black text-zinc-400">
-                    PEDIDO #{pedido.id}
+              <div className="mt-5 rounded-2xl bg-zinc-100 p-4">
+                <p className="text-xs font-black uppercase text-zinc-400">
+                  Endereço de entrega
+                </p>
+
+                <div className="mt-2 space-y-1 text-sm">
+                  <p className="font-black text-zinc-900">
+                    📍 {pedido.rua},{" "}
+                    {pedido.numero}
                   </p>
 
-                  <h2 className="mt-1 text-2xl font-black text-zinc-900">
-                    {pedido.nome}
-                  </h2>
-
-                  {pedido.whatsapp && (
-                    <p className="mt-1 text-sm text-zinc-500">
-                      📱 {pedido.whatsapp}
+                  {pedido.complemento && (
+                    <p className="text-zinc-600">
+                      {pedido.complemento}
                     </p>
                   )}
 
-                </div>
-
-                {/* ========================= */}
-                {/* ENDEREÇO */}
-                {/* ========================= */}
-
-                <div className="mt-5 rounded-2xl bg-zinc-100 p-4">
-
-                  <p className="text-xs font-black uppercase text-zinc-400">
-                    Endereço de entrega
+                  <p className="text-zinc-600">
+                    {pedido.bairro}
                   </p>
 
-                  <div className="mt-2 space-y-1 text-sm">
-
-                    <p className="font-black text-zinc-900">
-                      📍 {pedido.rua}, {pedido.numero}
-                    </p>
-
-                    {pedido.complemento && (
-                      <p className="text-zinc-600">
-                        {pedido.complemento}
-                      </p>
-                    )}
-
-                    <p className="text-zinc-600">
-                      {pedido.bairro}
-                    </p>
-
-                    <p className="text-zinc-600">
-                      {pedido.cidade} - {pedido.estado}
-                    </p>
-
-                    <p className="text-zinc-500">
-                      CEP: {pedido.cep}
-                    </p>
-
-                  </div>
-
-                </div>
-
-                {/* ========================= */}
-                {/* PRODUTOS */}
-                {/* ========================= */}
-
-                <div className="mt-4 rounded-2xl border border-zinc-200 p-4">
-
-                  <p className="font-bold text-zinc-900">
-                    Pedido
+                  <p className="text-zinc-600">
+                    {pedido.cidade} -{" "}
+                    {pedido.estado}
                   </p>
 
-                  <div className="mt-2 space-y-1 text-sm text-zinc-600">
-
-                    {pedido.gas > 0 && (
-                      <p>
-                        🧯 {pedido.gas}x Botijão de cozinha
-                      </p>
-                    )}
-
-                    {pedido.agua > 0 && (
-                      <p>
-                        💧 {pedido.agua}x Água
-                      </p>
-                    )}
-
-                  </div>
-
+                  <p className="text-zinc-500">
+                    CEP: {pedido.cep}
+                  </p>
                 </div>
+              </div>
 
-                {/* ========================= */}
-                {/* OBSERVAÇÃO */}
-                {/* ========================= */}
+              {/* PRODUTOS */}
 
-                {pedido.observacao && (
-                  <div className="mt-4 rounded-2xl bg-yellow-50 p-4">
+              <div className="mt-4 rounded-2xl border border-zinc-200 p-4">
+                <p className="font-bold text-zinc-900">
+                  Pedido
+                </p>
 
-                    <p className="text-xs font-black uppercase text-yellow-600">
-                      Observação
+                <div className="mt-2 space-y-1 text-sm text-zinc-600">
+                  {pedido.gas > 0 && (
+                    <p>
+                      🧯 {pedido.gas}x Botijão de cozinha
                     </p>
+                  )}
 
-                    <p className="mt-1 text-sm text-zinc-700">
-                      {pedido.observacao}
+                  {pedido.agua > 0 && (
+                    <p>
+                      💧 {pedido.agua}x Água
                     </p>
-
-                  </div>
-                )}
-
-                {/* ========================= */}
-                {/* BOTÕES */}
-                {/* ========================= */}
-
-                <div className="mt-6 space-y-3">
-
-                  {/* GOOGLE MAPS */}
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      abrirRota(pedido)
-                    }
-                    className="w-full rounded-2xl bg-blue-600 p-4 font-black text-white transition hover:bg-blue-700 active:scale-[0.98]"
-                  >
-                    📍 ABRIR ROTA NO GOOGLE MAPS
-                  </button>
-
-                  {/* ENTREGUE */}
-
-                  <button
-                    type="button"
-                    disabled={
-                      atualizando === pedido.id
-                    }
-                    onClick={() =>
-                      marcarEntregue(pedido.id)
-                    }
-                    className="w-full rounded-2xl bg-zinc-900 p-4 font-black text-white transition hover:bg-zinc-700 disabled:opacity-50"
-                  >
-                    {atualizando === pedido.id
-                      ? "ATUALIZANDO..."
-                      : "✅ PEDIDO ENTREGUE"}
-                  </button>
-
+                  )}
                 </div>
+              </div>
+
+              {/* OBSERVAÇÃO */}
+
+              {pedido.observacao && (
+                <div className="mt-4 rounded-2xl bg-yellow-50 p-4">
+                  <p className="text-xs font-black uppercase text-yellow-600">
+                    Observação
+                  </p>
+
+                  <p className="mt-1 text-sm text-zinc-700">
+                    {pedido.observacao}
+                  </p>
+                </div>
+              )}
+
+              {/* BOTÕES */}
+
+              <div className="mt-6 space-y-3">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    abrirRota(pedido)
+                  }
+                  className="w-full rounded-2xl bg-blue-600 p-4 font-black text-white transition hover:bg-blue-700 active:scale-[0.98]"
+                >
+                  📍 ABRIR ROTA NO GOOGLE MAPS
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    atualizando === pedido.id
+                  }
+                  onClick={() =>
+                    marcarEntregue(
+                      pedido.id
+                    )
+                  }
+                  className="w-full rounded-2xl bg-zinc-900 p-4 font-black text-white transition hover:bg-zinc-700 disabled:opacity-50"
+                >
+                  {atualizando === pedido.id
+                    ? "ATUALIZANDO..."
+                    : "✅ PEDIDO ENTREGUE"}
+                </button>
 
               </div>
-            );
-          })}
-
+            </div>
+          ))}
         </div>
-
       </div>
-
     </main>
   );
 }
