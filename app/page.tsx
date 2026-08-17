@@ -75,6 +75,8 @@ export default function Home() {
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
 
+  const [buscandoCep, setBuscandoCep] = useState(false);
+
   // =========================
   // PRODUTOS
   // =========================
@@ -177,6 +179,59 @@ export default function Home() {
   }
 
   // =========================
+  // BUSCAR CEP
+  // =========================
+
+  async function buscarCep(valor: string) {
+    const cepLimpo = valor.replace(/\D/g, "");
+
+    setCep(cepLimpo);
+
+    if (cepLimpo.length !== 8) {
+      return;
+    }
+
+    setBuscandoCep(true);
+    setMensagem("");
+
+    try {
+      const resposta = await fetch(
+        `https://viacep.com.br/ws/${cepLimpo}/json/`
+      );
+
+      if (!resposta.ok) {
+        throw new Error("Erro na consulta do CEP");
+      }
+
+      const dados = await resposta.json();
+
+      if (dados.erro) {
+        setMensagem("CEP não encontrado.");
+        setBuscandoCep(false);
+        return;
+      }
+
+      setRua(dados.logradouro || "");
+      setBairro(dados.bairro || "");
+      setCidade(dados.localidade || "");
+      setEstado(dados.uf || "");
+
+      setMensagem("");
+    } catch (error) {
+      console.error(
+        "Erro ao buscar CEP:",
+        error
+      );
+
+      setMensagem(
+        "Não foi possível consultar o CEP."
+      );
+    } finally {
+      setBuscandoCep(false);
+    }
+  }
+
+  // =========================
   // ESTILOS
   // =========================
 
@@ -217,11 +272,11 @@ export default function Home() {
 
     // =========================
     // VALIDAR DADOS
+    // E-MAIL NÃO É OBRIGATÓRIO
     // =========================
 
     if (
       !nome ||
-      !email ||
       !whatsapp ||
       !cep ||
       !rua ||
@@ -241,7 +296,7 @@ export default function Home() {
     setMensagem("");
 
     // =========================
-    // MONTAR ENDEREÇO ANTIGO
+    // MONTAR ENDEREÇO
     // =========================
 
     const enderecoCompleto = [
@@ -264,15 +319,11 @@ export default function Home() {
       .from("pedidos")
       .insert({
         nome,
-        email,
+        email: email || null,
         whatsapp,
 
-        // Campo antigo
-        // Mantido para não quebrar
-        // a tabela atual.
         endereco: enderecoCompleto,
 
-        // Campos novos
         cep,
         rua,
         numero,
@@ -281,14 +332,11 @@ export default function Home() {
         cidade,
         estado,
 
-        // Produtos
         gas,
         agua,
 
-        // Observação
         observacao,
 
-        // Status inicial
         status: "novo",
       });
 
@@ -507,9 +555,7 @@ export default function Home() {
 
             </div>
 
-            {/* ========================= */}
             {/* GÁS */}
-            {/* ========================= */}
 
             <div
               className="border border-zinc-200 p-4"
@@ -602,9 +648,7 @@ export default function Home() {
 
             </div>
 
-            {/* ========================= */}
             {/* ÁGUA */}
-            {/* ========================= */}
 
             <div
               className="mt-3 border border-zinc-200 p-4"
@@ -750,7 +794,7 @@ export default function Home() {
             <div className="mt-4">
 
               <label className="mb-2 block text-sm font-bold text-zinc-700">
-                E-mail *
+                E-mail
               </label>
 
               <input
@@ -759,7 +803,7 @@ export default function Home() {
                 onChange={(e) =>
                   setEmail(e.target.value)
                 }
-                placeholder="seuemail@email.com"
+                placeholder="seuemail@email.com (opcional)"
                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
               />
 
@@ -785,9 +829,7 @@ export default function Home() {
 
             </div>
 
-            {/* ========================= */}
             {/* ENDEREÇO */}
-            {/* ========================= */}
 
             <div className="mt-6">
 
@@ -815,12 +857,19 @@ export default function Home() {
                   type="text"
                   value={cep}
                   onChange={(e) =>
-                    setCep(e.target.value)
+                    buscarCep(e.target.value)
                   }
                   placeholder="00000-000"
                   maxLength={9}
+                  inputMode="numeric"
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                 />
+
+                {buscandoCep && (
+                  <p className="mt-2 text-xs font-semibold text-zinc-500">
+                    Buscando endereço...
+                  </p>
+                )}
 
               </div>
 
@@ -953,9 +1002,7 @@ export default function Home() {
 
             </div>
 
-            {/* ========================= */}
             {/* OBSERVAÇÃO */}
-            {/* ========================= */}
 
             <div className="mt-4">
 
@@ -977,9 +1024,7 @@ export default function Home() {
 
           </section>
 
-          {/* ========================= */}
           {/* MENSAGEM */}
-          {/* ========================= */}
 
           {mensagem && (
             <div className="rounded-2xl bg-zinc-900 p-4 text-center text-sm font-bold text-white">
@@ -987,9 +1032,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ========================= */}
           {/* BOTÃO */}
-          {/* ========================= */}
 
           <button
             type="submit"
