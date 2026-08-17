@@ -26,34 +26,51 @@ type Configuracao = {
   tamanho_icone: number;
 };
 
+type DadosCliente = {
+  nome: string;
+  email: string;
+  whatsapp: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+};
+
+const CHAVE_DADOS_CLIENTE =
+  "jm-gas-dados-cliente";
+
 export default function Home() {
-  const [config, setConfig] = useState<Configuracao>({
-    nome_empresa: "JM GÁS",
+  const [config, setConfig] =
+    useState<Configuracao>({
+      nome_empresa: "JM GÁS",
 
-    texto_principal:
-      "Faça seu pedido de forma rápida e fácil.",
+      texto_principal:
+        "Faça seu pedido de forma rápida e fácil.",
 
-    cor_principal: "#dc2626",
-    cor_fundo: "#f4f4f5",
-    cor_card: "#ffffff",
+      cor_principal: "#dc2626",
+      cor_fundo: "#f4f4f5",
+      cor_card: "#ffffff",
 
-    imagem_logo: "/botijao.jpg",
-    imagem_icone_gas: "/botijao.jpg",
-    imagem_icone_agua: "/agua.jpg",
+      imagem_logo: "/botijao.jpg",
+      imagem_icone_gas: "/botijao.jpg",
+      imagem_icone_agua: "/agua.jpg",
 
-    estilo_cards: "arredondado",
+      estilo_cards: "arredondado",
 
-    cor_cabecalho: "#09090b",
-    cor_fonte_cabecalho: "#ffffff",
+      cor_cabecalho: "#09090b",
+      cor_fonte_cabecalho: "#ffffff",
 
-    subtitulo_cabecalho:
-      "Gás e água na sua casa",
+      subtitulo_cabecalho:
+        "Gás e água na sua casa",
 
-    mostrar_pedidos_online: true,
+      mostrar_pedidos_online: true,
 
-    tamanho_logo: 56,
-    tamanho_icone: 64,
-  });
+      tamanho_logo: 56,
+      tamanho_icone: 64,
+    });
 
   // =========================
   // DADOS DO CLIENTE
@@ -70,7 +87,8 @@ export default function Home() {
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
+  const [complemento, setComplemento] =
+    useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
@@ -97,6 +115,89 @@ export default function Home() {
 
   const [mensagem, setMensagem] =
     useState("");
+
+  // =========================
+  // CARREGAR DADOS SALVOS
+  // =========================
+
+  useEffect(() => {
+    try {
+      const dadosSalvos =
+        localStorage.getItem(
+          CHAVE_DADOS_CLIENTE
+        );
+
+      if (!dadosSalvos) return;
+
+      const dados: Partial<DadosCliente> =
+        JSON.parse(dadosSalvos);
+
+      setNome(dados.nome || "");
+      setEmail(dados.email || "");
+      setWhatsapp(dados.whatsapp || "");
+
+      setCep(dados.cep || "");
+      setRua(dados.rua || "");
+      setNumero(dados.numero || "");
+      setComplemento(
+        dados.complemento || ""
+      );
+      setBairro(dados.bairro || "");
+      setCidade(dados.cidade || "");
+      setEstado(dados.estado || "");
+    } catch (error) {
+      console.error(
+        "Erro ao carregar dados salvos:",
+        error
+      );
+
+      localStorage.removeItem(
+        CHAVE_DADOS_CLIENTE
+      );
+    }
+  }, []);
+
+  // =========================
+  // SALVAR DADOS AUTOMATICAMENTE
+  // =========================
+
+  useEffect(() => {
+    const dadosCliente: DadosCliente = {
+      nome,
+      email,
+      whatsapp,
+      cep,
+      rua,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      estado,
+    };
+
+    try {
+      localStorage.setItem(
+        CHAVE_DADOS_CLIENTE,
+        JSON.stringify(dadosCliente)
+      );
+    } catch (error) {
+      console.error(
+        "Erro ao salvar dados do cliente:",
+        error
+      );
+    }
+  }, [
+    nome,
+    email,
+    whatsapp,
+    cep,
+    rua,
+    numero,
+    complemento,
+    bairro,
+    cidade,
+    estado,
+  ]);
 
   // =========================
   // CONFIGURAÇÃO
@@ -352,7 +453,6 @@ export default function Home() {
       .insert({
         nome,
 
-        // E-mail opcional
         email: email.trim() || null,
 
         whatsapp,
@@ -403,24 +503,13 @@ export default function Home() {
     );
 
     // =========================
-    // LIMPAR DADOS
+    // LIMPAR PEDIDO
     // =========================
-
-    setNome("");
-    setEmail("");
-    setWhatsapp("");
-
-    setCep("");
-    setRua("");
-    setNumero("");
-    setComplemento("");
-    setBairro("");
-    setCidade("");
-    setEstado("");
+    // Os dados pessoais continuam
+    // salvos no navegador.
 
     setGas(0);
     setAgua(0);
-
     setObservacao("");
 
     setEnviando(false);
@@ -772,11 +861,12 @@ export default function Home() {
                   setNome(e.target.value)
                 }
                 placeholder="Como podemos te chamar?"
+                autoComplete="name"
                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
               />
             </div>
 
-            {/* EMAIL OPCIONAL */}
+            {/* EMAIL */}
 
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-zinc-700">
@@ -793,6 +883,7 @@ export default function Home() {
                   setEmail(e.target.value)
                 }
                 placeholder="seuemail@email.com"
+                autoComplete="email"
                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
               />
             </div>
@@ -811,6 +902,7 @@ export default function Home() {
                   setWhatsapp(e.target.value)
                 }
                 placeholder="(00) 00000-0000"
+                autoComplete="tel"
                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
               />
             </div>
@@ -873,6 +965,7 @@ export default function Home() {
                     setRua(e.target.value)
                   }
                   placeholder="Nome da rua"
+                  autoComplete="street-address"
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                 />
               </div>
@@ -892,6 +985,7 @@ export default function Home() {
                       setNumero(e.target.value)
                     }
                     placeholder="123"
+                    autoComplete="address-line2"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
@@ -910,6 +1004,7 @@ export default function Home() {
                       )
                     }
                     placeholder="Casa, apto..."
+                    autoComplete="address-line2"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
@@ -929,6 +1024,7 @@ export default function Home() {
                     setBairro(e.target.value)
                   }
                   placeholder="Nome do bairro"
+                  autoComplete="address-level3"
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                 />
               </div>
@@ -948,6 +1044,7 @@ export default function Home() {
                       setCidade(e.target.value)
                     }
                     placeholder="Sua cidade"
+                    autoComplete="address-level2"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
@@ -967,6 +1064,7 @@ export default function Home() {
                     }
                     placeholder="SP"
                     maxLength={2}
+                    autoComplete="address-level1"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 uppercase outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
