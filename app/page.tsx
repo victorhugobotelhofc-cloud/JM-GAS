@@ -453,7 +453,8 @@ export default function Home() {
       .insert({
         nome,
 
-        email: email.trim() || null,
+        // E-mail opcional
+        email: email.trim(),
 
         whatsapp,
 
@@ -486,7 +487,7 @@ export default function Home() {
       );
 
       setMensagem(
-        "Não foi possível enviar o pedido. Tente novamente."
+        `Erro ao enviar pedido: ${error.message}`
       );
 
       setEnviando(false);
@@ -504,9 +505,9 @@ export default function Home() {
 
     // =========================
     // LIMPAR PEDIDO
-    // =========================
-    // Os dados pessoais continuam
+    // Os dados pessoais permanecem
     // salvos no navegador.
+    // =========================
 
     setGas(0);
     setAgua(0);
@@ -538,8 +539,6 @@ export default function Home() {
         }}
       >
         <div className="mx-auto flex max-w-2xl items-center justify-between">
-          {/* LOGO */}
-
           <div className="flex items-center gap-3">
             <div
               className="flex items-center justify-center overflow-hidden rounded-xl bg-white shadow"
@@ -586,8 +585,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PEDIDOS ONLINE */}
-
           {config.mostrar_pedidos_online && (
             <div
               className="hidden rounded-lg border px-3 py-2 text-xs font-bold sm:block"
@@ -612,8 +609,6 @@ export default function Home() {
       {/* ========================= */}
 
       <div className="mx-auto max-w-2xl px-4 py-8">
-        {/* TÍTULO */}
-
         <div className="mb-7">
           <p
             className="mb-2 text-sm font-bold uppercase tracking-wider"
@@ -638,9 +633,7 @@ export default function Home() {
           onSubmit={fazerPedido}
           className="space-y-5"
         >
-          {/* ========================= */}
           {/* PRODUTOS */}
-          {/* ========================= */}
 
           <section
             className="p-5 shadow-sm ring-1 ring-zinc-200"
@@ -749,7 +742,7 @@ export default function Home() {
               style={{
                 borderRadius:
                   cardRadius,
-              }}
+            }}
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -824,9 +817,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* DADOS */}
-          {/* ========================= */}
 
           <section
             className="p-5 shadow-sm ring-1 ring-zinc-200"
@@ -866,7 +857,7 @@ export default function Home() {
               />
             </div>
 
-            {/* EMAIL */}
+            {/* E-MAIL */}
 
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-zinc-700">
@@ -907,9 +898,7 @@ export default function Home() {
               />
             </div>
 
-            {/* ========================= */}
             {/* ENDEREÇO */}
-            {/* ========================= */}
 
             <div className="mt-6">
               <div className="mb-4">
@@ -985,7 +974,6 @@ export default function Home() {
                       setNumero(e.target.value)
                     }
                     placeholder="123"
-                    autoComplete="address-line2"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
@@ -1004,7 +992,6 @@ export default function Home() {
                       )
                     }
                     placeholder="Casa, apto..."
-                    autoComplete="address-line2"
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
                   />
                 </div>
@@ -1092,9 +1079,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* MENSAGEM */}
-          {/* ========================= */}
 
           {mensagem && (
             <div className="rounded-2xl bg-zinc-900 p-4 text-center text-sm font-bold text-white">
@@ -1102,9 +1087,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ========================= */}
           {/* BOTÃO */}
-          {/* ========================= */}
 
           <button
             type="submit"
