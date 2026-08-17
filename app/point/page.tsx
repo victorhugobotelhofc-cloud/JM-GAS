@@ -36,21 +36,22 @@ export default function PointJM() {
   // =========================
 
   useEffect(() => {
-    let ativo = true;
+    let cancelado = false;
 
     async function verificarLogin() {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-      if (!session) {
+      if (cancelado) return;
+
+      if (error || !user) {
         router.replace("/login");
         return;
       }
 
-      if (ativo) {
-        setVerificandoLogin(false);
-      }
+      setVerificandoLogin(false);
     }
 
     verificarLogin();
@@ -66,7 +67,7 @@ export default function PointJM() {
     );
 
     return () => {
-      ativo = false;
+      cancelado = true;
       subscription.unsubscribe();
     };
   }, [router]);
@@ -75,28 +76,34 @@ export default function PointJM() {
   // CARREGAR PEDIDOS
   // =========================
 
-  async function carregarPedidos() {
-    const { data, error } = await supabase
-      .from("pedidos")
-      .select("*")
-      .eq("status", "em_entrega")
-      .order("criado_em", {
-        ascending: false,
-      });
+  useEffect(() => {
+    if (verificandoLogin) return;
 
-    if (error) {
-      console.error(
-        "Erro ao carregar pedidos:",
-        error
-      );
+    async function carregarPedidos() {
+      const { data, error } = await supabase
+        .from("pedidos")
+        .select("*")
+        .eq("status", "em_entrega")
+        .order("criado_em", {
+          ascending: false,
+        });
 
+      if (error) {
+        console.error(
+          "Erro ao carregar pedidos:",
+          error
+        );
+
+        setCarregando(false);
+        return;
+      }
+
+      setPedidos(data || []);
       setCarregando(false);
-      return;
     }
 
-    setPedidos(data || []);
-    setCarregando(false);
-  }
+    carregarPedidos();
+  }, [verificandoLogin]);
 
   // =========================
   // MARCAR COMO ENTREGUE
@@ -107,7 +114,9 @@ export default function PointJM() {
 
     const { error } = await supabase
       .from("pedidos")
-      .update({ status: "entregue" })
+      .update({
+        status: "entregue",
+      })
       .eq("id", id);
 
     if (error) {
@@ -162,15 +171,13 @@ export default function PointJM() {
   }
 
   // =========================
-  // CARREGAR PEDIDOS
-  // APÓS LOGIN
+  // SAIR
   // =========================
 
-  useEffect(() => {
-    if (!verificandoLogin) {
-      carregarPedidos();
-    }
-  }, [verificandoLogin]);
+  async function sair() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   // =========================
   // VERIFICANDO LOGIN
@@ -200,22 +207,21 @@ export default function PointJM() {
 
         {/* CABEÇALHO */}
 
-        <div className="mb-6">
-          <h1 className="text-3xl font-black text-zinc-900">
-            POINT JM
-          </h1>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-zinc-900">
+              POINT JM
+            </h1>
 
-          <p className="mt-1 text-zinc-500">
-            Entregas em andamento
-          </p>
+            <p className="mt-1 text-zinc-500">
+              Entregas em andamento
+            </p>
+          </div>
 
           <button
             type="button"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.replace("/login");
-            }}
-            className="mt-4 rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
+            onClick={sair}
+            className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
           >
             Sair
           </button>
@@ -366,9 +372,7 @@ export default function PointJM() {
                     atualizando === pedido.id
                   }
                   onClick={() =>
-                    marcarEntregue(
-                      pedido.id
-                    )
+                    marcarEntregue(pedido.id)
                   }
                   className="w-full rounded-2xl bg-zinc-900 p-4 font-black text-white transition hover:bg-zinc-700 disabled:opacity-50"
                 >
