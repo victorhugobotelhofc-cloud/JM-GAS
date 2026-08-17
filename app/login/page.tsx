@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -13,49 +13,127 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [entrando, setEntrando] = useState(false);
+  const [verificando, setVerificando] = useState(true);
 
-  async function entrar(e: FormEvent) {
+  // =========================
+  // VERIFICAR SE JÁ ESTÁ LOGADO
+  // =========================
+
+  useEffect(() => {
+    async function verificarSessao() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        router.replace("/point");
+        return;
+      }
+
+      setVerificando(false);
+    }
+
+    verificarSessao();
+  }, [router]);
+
+  // =========================
+  // FAZER LOGIN
+  // =========================
+
+  async function fazerLogin(e: FormEvent) {
     e.preventDefault();
 
     setErro("");
 
-    if (email.trim().toLowerCase() !== EMAIL_AUTORIZADO) {
+    const emailDigitado = email.trim().toLowerCase();
+
+    // Só aceita o e-mail autorizado
+    if (emailDigitado !== EMAIL_AUTORIZADO) {
       setErro("E-mail ou senha incorretos.");
+      return;
+    }
+
+    if (!senha) {
+      setErro("Digite sua senha.");
       return;
     }
 
     setEntrando(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: senha,
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email: emailDigitado,
+        password: senha,
+      });
 
     if (error) {
-      console.error(error);
+      console.error("Erro no login:", error);
+
       setErro("E-mail ou senha incorretos.");
       setEntrando(false);
+
       return;
     }
 
-    router.push("/point");
+    router.replace("/point");
   }
+
+  // =========================
+  // CARREGANDO
+  // =========================
+
+  if (verificando) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100">
+        <div className="text-center">
+          <div className="text-4xl">🔐</div>
+
+          <p className="mt-3 font-bold text-zinc-700">
+            Verificando acesso...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // =========================
+  // LOGIN
+  // =========================
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
+
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl ring-1 ring-zinc-200">
-        <div className="mb-6 text-center">
-          <h1 className="text-3xl font-black text-zinc-950">
+
+        {/* CABEÇALHO */}
+
+        <div className="mb-7 text-center">
+
+          <div className="text-5xl">
+            🔐
+          </div>
+
+          <h1 className="mt-3 text-3xl font-black text-zinc-950">
             Área Restrita
           </h1>
 
           <p className="mt-2 text-sm text-zinc-500">
-            Entre para acessar o sistema.
+            Entre para acessar o POINT JM.
           </p>
+
         </div>
 
-        <form onSubmit={entrar} className="space-y-4">
+        {/* FORMULÁRIO */}
+
+        <form
+          onSubmit={fazerLogin}
+          className="space-y-4"
+        >
+
+          {/* EMAIL */}
+
           <div>
+
             <label className="mb-2 block text-sm font-bold text-zinc-700">
               E-mail
             </label>
@@ -63,15 +141,21 @@ export default function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Seu e-mail"
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              placeholder="Digite seu e-mail"
               autoComplete="username"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-zinc-950 focus:bg-white"
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-zinc-950 focus:bg-white"
               required
             />
+
           </div>
 
+          {/* SENHA */}
+
           <div>
+
             <label className="mb-2 block text-sm font-bold text-zinc-700">
               Senha
             </label>
@@ -79,13 +163,18 @@ export default function LoginPage() {
             <input
               type="password"
               value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              placeholder="Sua senha"
+              onChange={(e) =>
+                setSenha(e.target.value)
+              }
+              placeholder="Digite sua senha"
               autoComplete="current-password"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-zinc-950 focus:bg-white"
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-zinc-950 focus:bg-white"
               required
             />
+
           </div>
+
+          {/* ERRO */}
 
           {erro && (
             <div className="rounded-2xl bg-red-50 p-4 text-center text-sm font-bold text-red-600">
@@ -93,15 +182,22 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* BOTÃO */}
+
           <button
             type="submit"
             disabled={entrando}
-            className="w-full rounded-2xl bg-zinc-950 px-6 py-4 font-black text-white transition hover:brightness-90 disabled:opacity-60"
+            className="w-full rounded-2xl bg-zinc-950 px-6 py-4 font-black text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {entrando ? "ENTRANDO..." : "ENTRAR"}
+            {entrando
+              ? "ENTRANDO..."
+              : "ENTRAR"}
           </button>
+
         </form>
+
       </div>
+
     </main>
   );
 }
