@@ -30,21 +30,22 @@ export default function PainelJM() {
   // =========================
 
   useEffect(() => {
-    let ativo = true;
+    let cancelado = false;
 
     async function verificarLogin() {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-      if (!session) {
+      if (cancelado) return;
+
+      if (error || !user) {
         router.replace("/login");
         return;
       }
 
-      if (ativo) {
-        setVerificandoLogin(false);
-      }
+      setVerificandoLogin(false);
     }
 
     verificarLogin();
@@ -60,7 +61,7 @@ export default function PainelJM() {
     );
 
     return () => {
-      ativo = false;
+      cancelado = true;
       subscription.unsubscribe();
     };
   }, [router]);
@@ -69,27 +70,33 @@ export default function PainelJM() {
   // CARREGAR PEDIDOS
   // =========================
 
-  async function carregarPedidos() {
-    const { data, error } = await supabase
-      .from("pedidos")
-      .select("*")
-      .order("criado_em", {
-        ascending: false,
-      });
+  useEffect(() => {
+    if (verificandoLogin) return;
 
-    if (error) {
-      console.error(
-        "Erro ao carregar pedidos:",
-        error
-      );
+    async function carregarPedidos() {
+      const { data, error } = await supabase
+        .from("pedidos")
+        .select("*")
+        .order("criado_em", {
+          ascending: false,
+        });
 
+      if (error) {
+        console.error(
+          "Erro ao carregar pedidos:",
+          error
+        );
+
+        setCarregando(false);
+        return;
+      }
+
+      setPedidos(data || []);
       setCarregando(false);
-      return;
     }
 
-    setPedidos(data || []);
-    setCarregando(false);
-  }
+    carregarPedidos();
+  }, [verificandoLogin]);
 
   // =========================
   // MUDAR STATUS
@@ -133,17 +140,16 @@ export default function PainelJM() {
   }
 
   // =========================
-  // CARREGAR PEDIDOS APÓS LOGIN
+  // SAIR
   // =========================
 
-  useEffect(() => {
-    if (!verificandoLogin) {
-      carregarPedidos();
-    }
-  }, [verificandoLogin]);
+  async function sair() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   // =========================
-  // CORES DO STATUS
+  // STATUS
   // =========================
 
   function statusCor(status: string) {
@@ -187,7 +193,7 @@ export default function PainelJM() {
   }
 
   // =========================
-  // TELA DE VERIFICAÇÃO
+  // VERIFICANDO LOGIN
   // =========================
 
   if (verificandoLogin) {
@@ -207,7 +213,7 @@ export default function PainelJM() {
   }
 
   // =========================
-  // PAINEL JM
+  // PAINEL
   // =========================
 
   return (
@@ -217,7 +223,6 @@ export default function PainelJM() {
         {/* CABEÇALHO */}
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
           <div>
             <h1 className="text-3xl font-black text-zinc-900">
               PAINEL JM
@@ -228,14 +233,9 @@ export default function PainelJM() {
             </p>
           </div>
 
-          {/* SAIR */}
-
           <button
             type="button"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.replace("/login");
-            }}
+            onClick={sair}
             className="w-fit rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
           >
             Sair
@@ -255,7 +255,6 @@ export default function PainelJM() {
         {!carregando &&
           pedidos.length === 0 && (
             <div className="rounded-2xl bg-white p-8 text-center shadow">
-
               <p className="font-bold text-zinc-900">
                 Nenhum pedido encontrado.
               </p>
@@ -263,7 +262,6 @@ export default function PainelJM() {
               <p className="mt-1 text-sm text-zinc-500">
                 Os novos pedidos aparecerão aqui.
               </p>
-
             </div>
           )}
 
@@ -282,7 +280,6 @@ export default function PainelJM() {
                   {/* CLIENTE */}
 
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
                     <div>
                       <p className="text-xs font-bold text-zinc-400">
                         PEDIDO #{pedido.id}
@@ -293,7 +290,6 @@ export default function PainelJM() {
                       </h2>
 
                       <div className="mt-2 space-y-1 text-sm text-zinc-500">
-
                         <p>
                           📱 {pedido.whatsapp}
                         </p>
@@ -307,7 +303,6 @@ export default function PainelJM() {
                         <p>
                           📍 {pedido.endereco}
                         </p>
-
                       </div>
                     </div>
 
@@ -322,19 +317,16 @@ export default function PainelJM() {
                         pedido.status
                       )}
                     </span>
-
                   </div>
 
                   {/* PRODUTOS */}
 
                   <div className="mt-6 rounded-2xl bg-zinc-50 p-4">
-
                     <p className="font-bold text-zinc-900">
                       Produtos
                     </p>
 
                     <div className="mt-2 space-y-1 text-sm text-zinc-600">
-
                       {pedido.gas > 0 && (
                         <p>
                           🧯 {pedido.gas}x Botijão de cozinha
@@ -346,7 +338,6 @@ export default function PainelJM() {
                           💧 {pedido.agua}x Água
                         </p>
                       )}
-
                     </div>
                   </div>
 
@@ -354,7 +345,6 @@ export default function PainelJM() {
 
                   {pedido.observacao && (
                     <div className="mt-4 rounded-2xl bg-zinc-100 p-4">
-
                       <p className="text-xs font-black uppercase text-zinc-400">
                         Observação
                       </p>
@@ -362,14 +352,12 @@ export default function PainelJM() {
                       <p className="mt-1 text-sm text-zinc-700">
                         {pedido.observacao}
                       </p>
-
                     </div>
                   )}
 
                   {/* AÇÕES */}
 
                   <div className="mt-6 border-t border-zinc-100 pt-5">
-
                     <p className="mb-3 text-sm font-bold text-zinc-900">
                       Alterar status
                     </p>
@@ -448,7 +436,6 @@ export default function PainelJM() {
 
             </div>
           )}
-
       </div>
     </main>
   );
