@@ -2,39 +2,29 @@
 
 import {
   FormEvent,
-  useEffect,
+  Suspense,
   useState,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-const EMAIL_AUTORIZADO = "jmgashugo747@gmail.com";
+const EMAIL_AUTORIZADO =
+  "jmgashugo747@gmail.com";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const destino =
+    searchParams.get("next") || "/point";
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [entrando, setEntrando] = useState(false);
-
-  const destino =
-    searchParams.get("next") || "/point";
-
-  useEffect(() => {
-    async function verificarSessao() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        router.replace(destino);
-      }
-    }
-
-    verificarSessao();
-  }, [router, destino]);
 
   async function fazerLogin(e: FormEvent) {
     e.preventDefault();
@@ -44,13 +34,8 @@ export default function LoginPage() {
     const emailDigitado =
       email.trim().toLowerCase();
 
-    if (
-      emailDigitado !==
-      EMAIL_AUTORIZADO
-    ) {
-      setErro(
-        "E-mail ou senha incorretos."
-      );
+    if (emailDigitado !== EMAIL_AUTORIZADO) {
+      setErro("E-mail ou senha incorretos.");
       return;
     }
 
@@ -69,28 +54,20 @@ export default function LoginPage() {
         });
 
       if (error) {
-        console.error(
-          "Erro no login:",
-          error
-        );
+        console.error("Erro no login:", error);
 
         setErro(error.message);
         return;
       }
 
       if (!data.session) {
-        setErro(
-          "O login não criou uma sessão."
-        );
+        setErro("O login não criou uma sessão.");
         return;
       }
 
       router.replace(destino);
     } catch (error) {
-      console.error(
-        "Erro no login:",
-        error
-      );
+      console.error("Erro no login:", error);
 
       setErro(
         error instanceof Error
@@ -124,6 +101,7 @@ export default function LoginPage() {
           onSubmit={fazerLogin}
           className="space-y-4"
         >
+
           <div>
             <label className="mb-2 block text-sm font-bold text-zinc-700">
               E-mail
@@ -137,8 +115,8 @@ export default function LoginPage() {
               }
               placeholder="Digite seu e-mail"
               autoComplete="username"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
               required
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
             />
           </div>
 
@@ -155,8 +133,8 @@ export default function LoginPage() {
               }
               placeholder="Digite sua senha"
               autoComplete="current-password"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
               required
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
             />
           </div>
 
@@ -175,9 +153,31 @@ export default function LoginPage() {
               ? "ENTRANDO..."
               : "ENTRAR"}
           </button>
-        </form>
 
+        </form>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-zinc-100">
+          <div className="text-center">
+            <div className="text-4xl">
+              🔐
+            </div>
+
+            <p className="mt-3 font-bold text-zinc-700">
+              Carregando...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
