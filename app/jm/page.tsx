@@ -10,8 +10,10 @@ type Pedido = {
   whatsapp: string;
   email: string | null;
   endereco: string;
+
   gas: number;
   agua: number;
+
   observacao: string | null;
   status: string;
   criado_em: string;
@@ -22,8 +24,12 @@ export default function PainelJM() {
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [atualizando, setAtualizando] = useState<number | null>(null);
-  const [verificandoLogin, setVerificandoLogin] = useState(true);
+  const [atualizando, setAtualizando] =
+    useState<number | null>(null);
+  const [excluindo, setExcluindo] =
+    useState<number | null>(null);
+  const [verificandoLogin, setVerificandoLogin] =
+    useState(true);
 
   // =========================
   // VERIFICAR LOGIN
@@ -41,7 +47,9 @@ export default function PainelJM() {
       if (cancelado) return;
 
       if (error || !user) {
-        router.replace("/login");
+        router.replace(
+          "/login?next=/jm"
+        );
         return;
       }
 
@@ -55,7 +63,9 @@ export default function PainelJM() {
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
-          router.replace("/login");
+          router.replace(
+            "/login?next=/jm"
+          );
         }
       }
     );
@@ -140,16 +150,100 @@ export default function PainelJM() {
   }
 
   // =========================
+  // CANCELAR PEDIDO
+  // =========================
+
+  async function cancelarPedido(id: number) {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja cancelar este pedido?"
+    );
+
+    if (!confirmar) return;
+
+    setAtualizando(id);
+
+    const { error } = await supabase
+      .from("pedidos")
+      .update({
+        status: "cancelado",
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error(
+        "Erro ao cancelar pedido:",
+        error
+      );
+
+      setAtualizando(null);
+      return;
+    }
+
+    setPedidos((pedidosAtuais) =>
+      pedidosAtuais.map((pedido) =>
+        pedido.id === id
+          ? {
+              ...pedido,
+              status: "cancelado",
+            }
+          : pedido
+      )
+    );
+
+    setAtualizando(null);
+  }
+
+  // =========================
+  // EXCLUIR PEDIDO
+  // =========================
+
+  async function excluirPedido(id: number) {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja EXCLUIR este pedido? Essa ação não pode ser desfeita."
+    );
+
+    if (!confirmar) return;
+
+    setExcluindo(id);
+
+    const { error } = await supabase
+      .from("pedidos")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error(
+        "Erro ao excluir pedido:",
+        error
+      );
+
+      setExcluindo(null);
+      return;
+    }
+
+    setPedidos((pedidosAtuais) =>
+      pedidosAtuais.filter(
+        (pedido) => pedido.id !== id
+      )
+    );
+
+    setExcluindo(null);
+  }
+
+  // =========================
   // SAIR
   // =========================
 
   async function sair() {
     await supabase.auth.signOut();
-    router.replace("/login");
+
+    router.replace(
+      "/login?next=/jm"
+    );
   }
 
   // =========================
-  // STATUS
+  // STATUS - COR
   // =========================
 
   function statusCor(status: string) {
@@ -169,8 +263,16 @@ export default function PainelJM() {
       return "bg-green-100 text-green-700";
     }
 
+    if (status === "cancelado") {
+      return "bg-red-100 text-red-700";
+    }
+
     return "bg-zinc-100 text-zinc-700";
   }
+
+  // =========================
+  // STATUS - NOME
+  // =========================
 
   function statusNome(status: string) {
     if (status === "novo") {
@@ -187,6 +289,10 @@ export default function PainelJM() {
 
     if (status === "entregue") {
       return "ENTREGUE";
+    }
+
+    if (status === "cancelado") {
+      return "CANCELADO";
     }
 
     return status.toUpperCase();
@@ -223,6 +329,7 @@ export default function PainelJM() {
         {/* CABEÇALHO */}
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
           <div>
             <h1 className="text-3xl font-black text-zinc-900">
               PAINEL JM
@@ -240,6 +347,7 @@ export default function PainelJM() {
           >
             Sair
           </button>
+
         </div>
 
         {/* CARREGANDO */}
@@ -255,6 +363,7 @@ export default function PainelJM() {
         {!carregando &&
           pedidos.length === 0 && (
             <div className="rounded-2xl bg-white p-8 text-center shadow">
+
               <p className="font-bold text-zinc-900">
                 Nenhum pedido encontrado.
               </p>
@@ -262,6 +371,7 @@ export default function PainelJM() {
               <p className="mt-1 text-sm text-zinc-500">
                 Os novos pedidos aparecerão aqui.
               </p>
+
             </div>
           )}
 
@@ -280,6 +390,7 @@ export default function PainelJM() {
                   {/* CLIENTE */}
 
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
                     <div>
                       <p className="text-xs font-bold text-zinc-400">
                         PEDIDO #{pedido.id}
@@ -290,6 +401,7 @@ export default function PainelJM() {
                       </h2>
 
                       <div className="mt-2 space-y-1 text-sm text-zinc-500">
+
                         <p>
                           📱 {pedido.whatsapp}
                         </p>
@@ -303,6 +415,7 @@ export default function PainelJM() {
                         <p>
                           📍 {pedido.endereco}
                         </p>
+
                       </div>
                     </div>
 
@@ -317,16 +430,19 @@ export default function PainelJM() {
                         pedido.status
                       )}
                     </span>
+
                   </div>
 
                   {/* PRODUTOS */}
 
                   <div className="mt-6 rounded-2xl bg-zinc-50 p-4">
+
                     <p className="font-bold text-zinc-900">
                       Produtos
                     </p>
 
                     <div className="mt-2 space-y-1 text-sm text-zinc-600">
+
                       {pedido.gas > 0 && (
                         <p>
                           🧯 {pedido.gas}x Botijão de cozinha
@@ -338,13 +454,23 @@ export default function PainelJM() {
                           💧 {pedido.agua}x Água
                         </p>
                       )}
+
+                      {pedido.gas === 0 &&
+                        pedido.agua === 0 && (
+                          <p className="text-zinc-400">
+                            Nenhum produto informado.
+                          </p>
+                        )}
+
                     </div>
+
                   </div>
 
                   {/* OBSERVAÇÃO */}
 
                   {pedido.observacao && (
                     <div className="mt-4 rounded-2xl bg-zinc-100 p-4">
+
                       <p className="text-xs font-black uppercase text-zinc-400">
                         Observação
                       </p>
@@ -352,12 +478,14 @@ export default function PainelJM() {
                       <p className="mt-1 text-sm text-zinc-700">
                         {pedido.observacao}
                       </p>
+
                     </div>
                   )}
 
                   {/* AÇÕES */}
 
                   <div className="mt-6 border-t border-zinc-100 pt-5">
+
                     <p className="mb-3 text-sm font-bold text-zinc-900">
                       Alterar status
                     </p>
@@ -367,7 +495,8 @@ export default function PainelJM() {
                       <button
                         type="button"
                         disabled={
-                          atualizando === pedido.id
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id
                         }
                         onClick={() =>
                           mudarStatus(
@@ -383,7 +512,8 @@ export default function PainelJM() {
                       <button
                         type="button"
                         disabled={
-                          atualizando === pedido.id
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id
                         }
                         onClick={() =>
                           mudarStatus(
@@ -399,7 +529,8 @@ export default function PainelJM() {
                       <button
                         type="button"
                         disabled={
-                          atualizando === pedido.id
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id
                         }
                         onClick={() =>
                           mudarStatus(
@@ -415,7 +546,8 @@ export default function PainelJM() {
                       <button
                         type="button"
                         disabled={
-                          atualizando === pedido.id
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id
                         }
                         onClick={() =>
                           mudarStatus(
@@ -428,6 +560,46 @@ export default function PainelJM() {
                         Entregue
                       </button>
 
+                      <button
+                        type="button"
+                        disabled={
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id ||
+                          pedido.status ===
+                            "cancelado"
+                        }
+                        onClick={() =>
+                          cancelarPedido(
+                            pedido.id
+                          )
+                        }
+                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+                      >
+                        {atualizando === pedido.id &&
+                        pedido.status !==
+                          "cancelado"
+                          ? "CANCELANDO..."
+                          : "Cancelar"}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={
+                          atualizando === pedido.id ||
+                          excluindo === pedido.id
+                        }
+                        onClick={() =>
+                          excluirPedido(
+                            pedido.id
+                          )
+                        }
+                        className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-bold text-white hover:bg-zinc-700 disabled:opacity-50"
+                      >
+                        {excluindo === pedido.id
+                          ? "EXCLUINDO..."
+                          : "Excluir"}
+                      </button>
+
                     </div>
                   </div>
 
@@ -436,6 +608,7 @@ export default function PainelJM() {
 
             </div>
           )}
+
       </div>
     </main>
   );
