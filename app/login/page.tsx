@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -13,32 +13,6 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [entrando, setEntrando] = useState(false);
-  const [verificando, setVerificando] = useState(true);
-
-  // =========================
-  // VERIFICAR SESSÃO
-  // =========================
-
-  useEffect(() => {
-    async function verificarSessao() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        router.replace("/point");
-        return;
-      }
-
-      setVerificando(false);
-    }
-
-    verificarSessao();
-  }, [router]);
-
-  // =========================
-  // LOGIN
-  // =========================
 
   async function fazerLogin(e: FormEvent) {
     e.preventDefault();
@@ -59,44 +33,29 @@ export default function LoginPage() {
 
     setEntrando(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: emailDigitado,
-      password: senha,
-    });
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email: emailDigitado,
+        password: senha,
+      });
 
     if (error) {
       console.error("Erro no login:", error);
 
-      setErro("E-mail ou senha incorretos.");
+      setErro(error.message);
       setEntrando(false);
 
       return;
     }
 
+    if (!data.session) {
+      setErro("Login não criou uma sessão.");
+      setEntrando(false);
+      return;
+    }
+
     router.replace("/point");
   }
-
-  // =========================
-  // VERIFICANDO
-  // =========================
-
-  if (verificando) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
-        <div className="text-center">
-          <div className="text-4xl">🔐</div>
-
-          <p className="mt-3 font-bold text-zinc-700">
-            Verificando acesso...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  // =========================
-  // TELA DE LOGIN
-  // =========================
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
@@ -118,9 +77,6 @@ export default function LoginPage() {
           onSubmit={fazerLogin}
           className="space-y-4"
         >
-
-          {/* E-MAIL */}
-
           <div>
             <label className="mb-2 block text-sm font-bold text-zinc-700">
               E-mail
@@ -134,12 +90,10 @@ export default function LoginPage() {
               }
               placeholder="Digite seu e-mail"
               autoComplete="username"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-zinc-950 focus:bg-white"
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
               required
             />
           </div>
-
-          {/* SENHA */}
 
           <div>
             <label className="mb-2 block text-sm font-bold text-zinc-700">
@@ -154,12 +108,10 @@ export default function LoginPage() {
               }
               placeholder="Digite sua senha"
               autoComplete="current-password"
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-zinc-950 focus:bg-white"
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none focus:border-zinc-950 focus:bg-white"
               required
             />
           </div>
-
-          {/* ERRO */}
 
           {erro && (
             <div className="rounded-2xl bg-red-50 p-4 text-center text-sm font-bold text-red-600">
@@ -167,16 +119,15 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* ENTRAR */}
-
           <button
             type="submit"
             disabled={entrando}
-            className="w-full rounded-2xl bg-zinc-950 px-6 py-4 font-black text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-2xl bg-zinc-950 px-6 py-4 font-black text-white transition hover:bg-zinc-800 disabled:opacity-50"
           >
-            {entrando ? "ENTRANDO..." : "ENTRAR"}
+            {entrando
+              ? "ENTRANDO..."
+              : "ENTRAR"}
           </button>
-
         </form>
       </div>
     </main>
