@@ -2,19 +2,35 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function ConfigPage() {
-  const [nomeEmpresa, setNomeEmpresa] = useState("JM GÁS");
-  const [textoPrincipal, setTextoPrincipal] = useState(
-    "Faça seu pedido de forma rápida e fácil."
-  );
+  const router = useRouter();
 
-  const [corPrincipal, setCorPrincipal] = useState("#dc2626");
-  const [corFundo, setCorFundo] = useState("#f4f4f5");
-  const [corCard, setCorCard] = useState("#ffffff");
+  const [verificandoLogin, setVerificandoLogin] =
+    useState(true);
 
-  const [corCabecalho, setCorCabecalho] = useState("#09090b");
+  const [nomeEmpresa, setNomeEmpresa] =
+    useState("JM GÁS");
+
+  const [textoPrincipal, setTextoPrincipal] =
+    useState(
+      "Faça seu pedido de forma rápida e fácil."
+    );
+
+  const [corPrincipal, setCorPrincipal] =
+    useState("#dc2626");
+
+  const [corFundo, setCorFundo] =
+    useState("#f4f4f5");
+
+  const [corCard, setCorCard] =
+    useState("#ffffff");
+
+  const [corCabecalho, setCorCabecalho] =
+    useState("#09090b");
+
   const [corFonteCabecalho, setCorFonteCabecalho] =
     useState("#ffffff");
 
@@ -48,9 +64,56 @@ export default function ConfigPage() {
   const [mensagem, setMensagem] =
     useState("");
 
+  // =========================
+  // VERIFICAR LOGIN
+  // =========================
+
   useEffect(() => {
+    let cancelado = false;
+
+    async function verificarLogin() {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (cancelado) return;
+
+      if (error || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      setVerificandoLogin(false);
+    }
+
+    verificarLogin();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          router.replace("/login");
+        }
+      }
+    );
+
+    return () => {
+      cancelado = true;
+      subscription.unsubscribe();
+    };
+  }, [router]);
+
+  // =========================
+  // CARREGAR CONFIGURAÇÃO
+  // =========================
+
+  useEffect(() => {
+    if (verificandoLogin) return;
+
     carregarConfiguracao();
-  }, []);
+  }, [verificandoLogin]);
 
   async function carregarConfiguracao() {
     const { data, error } = await supabase
@@ -60,7 +123,10 @@ export default function ConfigPage() {
       .single();
 
     if (error) {
-      console.error(error);
+      console.error(
+        "Erro ao carregar configuração:",
+        error
+      );
       return;
     }
 
@@ -136,21 +202,40 @@ export default function ConfigPage() {
     );
   }
 
+  // =========================
+  // SALVAR CONFIGURAÇÃO
+  // =========================
+
   async function salvarConfiguracao() {
     setSalvando(true);
     setMensagem("");
 
-    const { data: configuracao } =
+    const { data: configuracao, error: erroBusca } =
       await supabase
         .from("configuracao")
         .select("id")
         .limit(1)
         .single();
 
+    if (erroBusca) {
+      console.error(
+        "Erro ao encontrar configuração:",
+        erroBusca
+      );
+
+      setMensagem(
+        "Não foi possível encontrar a configuração."
+      );
+
+      setSalvando(false);
+      return;
+    }
+
     if (!configuracao) {
       setMensagem(
         "Configuração não encontrada."
       );
+
       setSalvando(false);
       return;
     }
@@ -187,7 +272,10 @@ export default function ConfigPage() {
       .eq("id", configuracao.id);
 
     if (error) {
-      console.error(error);
+      console.error(
+        "Erro ao salvar configuração:",
+        error
+      );
 
       setMensagem(
         "Erro ao salvar configuração."
@@ -204,6 +292,19 @@ export default function ConfigPage() {
     setSalvando(false);
   }
 
+  // =========================
+  // SAIR
+  // =========================
+
+  async function sair() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
+
+  // =========================
+  // ESTILOS
+  // =========================
+
   const radius =
     estiloCards === "arredondado"
       ? "28px"
@@ -218,6 +319,30 @@ export default function ConfigPage() {
       ? "12px"
       : "4px";
 
+  // =========================
+  // VERIFICANDO LOGIN
+  // =========================
+
+  if (verificandoLogin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-6">
+        <div className="rounded-3xl bg-white p-8 text-center shadow">
+          <div className="text-4xl">
+            🔐
+          </div>
+
+          <p className="mt-3 font-black text-zinc-900">
+            Verificando acesso...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  // =========================
+  // CONFIGURAÇÃO
+  // =========================
+
   return (
     <main
       className="min-h-screen p-5"
@@ -229,24 +354,34 @@ export default function ConfigPage() {
 
         {/* CABEÇALHO */}
 
-        <div className="mb-8">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-          <p
-            className="text-sm font-bold uppercase tracking-widest"
-            style={{
-              color: corPrincipal,
-            }}
+          <div>
+            <p
+              className="text-sm font-bold uppercase tracking-widest"
+              style={{
+                color: corPrincipal,
+              }}
+            >
+              JM GÁS
+            </p>
+
+            <h1 className="mt-1 text-4xl font-black text-zinc-950">
+              Personalização
+            </h1>
+
+            <p className="mt-2 text-zinc-500">
+              Controle a aparência da página do cliente.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={sair}
+            className="w-fit rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
           >
-            JM GÁS
-          </p>
-
-          <h1 className="mt-1 text-4xl font-black text-zinc-950">
-            Personalização
-          </h1>
-
-          <p className="mt-2 text-zinc-500">
-            Controle a aparência da página do cliente.
-          </p>
+            Sair
+          </button>
 
         </div>
 
@@ -305,7 +440,8 @@ export default function ConfigPage() {
 
               <p className="mb-5 text-sm text-zinc-500">
                 Coloque o caminho da imagem que está na pasta
-                <b> public </b> do projeto.
+                <b> public </b>
+                do projeto.
               </p>
 
               {/* LOGO */}
@@ -326,7 +462,6 @@ export default function ConfigPage() {
               />
 
               <div className="mt-3 flex items-center gap-3">
-
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-zinc-100">
 
                   <Image
@@ -345,7 +480,6 @@ export default function ConfigPage() {
                 <span className="text-xs text-zinc-500">
                   Preview da logo
                 </span>
-
               </div>
 
               {/* GÁS */}
@@ -366,7 +500,6 @@ export default function ConfigPage() {
               />
 
               <div className="mt-3 flex items-center gap-3">
-
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-red-50">
 
                   <Image
@@ -385,7 +518,6 @@ export default function ConfigPage() {
                 <span className="text-xs text-zinc-500">
                   Preview do gás
                 </span>
-
               </div>
 
               {/* ÁGUA */}
@@ -406,7 +538,6 @@ export default function ConfigPage() {
               />
 
               <div className="mt-3 flex items-center gap-3">
-
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
 
                   <Image
@@ -425,7 +556,6 @@ export default function ConfigPage() {
                 <span className="text-xs text-zinc-500">
                   Preview da água
                 </span>
-
               </div>
 
             </section>
@@ -437,8 +567,6 @@ export default function ConfigPage() {
               <h2 className="mb-5 text-xl font-black">
                 🖥️ Faixa superior
               </h2>
-
-              {/* COR DA FAIXA */}
 
               <label className="mb-2 block text-sm font-bold text-zinc-700">
                 Cor da faixa
@@ -469,8 +597,6 @@ export default function ConfigPage() {
 
               </div>
 
-              {/* COR DA FONTE */}
-
               <label className="mb-2 mt-5 block text-sm font-bold text-zinc-700">
                 Cor da fonte da faixa
               </label>
@@ -500,8 +626,6 @@ export default function ConfigPage() {
 
               </div>
 
-              {/* SUBTÍTULO */}
-
               <label className="mb-2 mt-5 block text-sm font-bold text-zinc-700">
                 Texto abaixo do nome
               </label>
@@ -516,12 +640,9 @@ export default function ConfigPage() {
                 className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 outline-none focus:border-red-500"
               />
 
-              {/* PEDIDOS ONLINE */}
-
               <label className="mt-5 flex cursor-pointer items-center justify-between rounded-xl bg-zinc-50 p-4">
 
                 <div>
-
                   <p className="font-bold text-zinc-900">
                     Mostrar "PEDIDOS ONLINE"
                   </p>
@@ -529,7 +650,6 @@ export default function ConfigPage() {
                   <p className="text-xs text-zinc-500">
                     Texto no canto da faixa
                   </p>
-
                 </div>
 
                 <input
@@ -544,8 +664,6 @@ export default function ConfigPage() {
                 />
 
               </label>
-
-              {/* TAMANHO LOGO */}
 
               <div className="mt-5">
 
@@ -652,8 +770,6 @@ export default function ConfigPage() {
 
               </div>
 
-              {/* TAMANHO */}
-
               <div className="mt-5">
 
                 <div className="mb-2 flex justify-between">
@@ -696,7 +812,6 @@ export default function ConfigPage() {
               <div className="grid grid-cols-3 gap-3">
 
                 <div>
-
                   <label className="mb-2 block text-xs font-bold text-zinc-500">
                     Principal
                   </label>
@@ -711,11 +826,9 @@ export default function ConfigPage() {
                     }
                     className="h-12 w-full cursor-pointer rounded-xl border-0"
                   />
-
                 </div>
 
                 <div>
-
                   <label className="mb-2 block text-xs font-bold text-zinc-500">
                     Fundo
                   </label>
@@ -730,11 +843,9 @@ export default function ConfigPage() {
                     }
                     className="h-12 w-full cursor-pointer rounded-xl border-0"
                   />
-
                 </div>
 
                 <div>
-
                   <label className="mb-2 block text-xs font-bold text-zinc-500">
                     Cards
                   </label>
@@ -749,7 +860,6 @@ export default function ConfigPage() {
                     }
                     className="h-12 w-full cursor-pointer rounded-xl border-0"
                   />
-
                 </div>
 
               </div>
@@ -772,14 +882,11 @@ export default function ConfigPage() {
                   ["quadrado", "Quadrado"],
                 ].map(
                   ([valor, nome]) => (
-
                     <button
                       key={valor}
                       type="button"
                       onClick={() =>
-                        setEstiloCards(
-                          valor
-                        )
+                        setEstiloCards(valor)
                       }
                       className={`border-2 p-3 text-sm font-bold ${
                         estiloCards === valor
@@ -788,8 +895,7 @@ export default function ConfigPage() {
                       }`}
                       style={{
                         borderRadius:
-                          valor ===
-                          "arredondado"
+                          valor === "arredondado"
                             ? "16px"
                             : valor === "medio"
                             ? "10px"
@@ -798,7 +904,6 @@ export default function ConfigPage() {
                     >
                       {nome}
                     </button>
-
                   )
                 )}
 
@@ -810,9 +915,7 @@ export default function ConfigPage() {
 
             <button
               type="button"
-              onClick={
-                salvarConfiguracao
-              }
+              onClick={salvarConfiguracao}
               disabled={salvando}
               className="w-full rounded-2xl bg-zinc-950 px-5 py-5 text-lg font-black text-white shadow-lg transition hover:bg-zinc-800 disabled:opacity-50"
             >
@@ -842,8 +945,7 @@ export default function ConfigPage() {
             <div
               className="overflow-hidden shadow-2xl"
               style={{
-                backgroundColor:
-                  corFundo,
+                backgroundColor: corFundo,
                 borderRadius: radius,
               }}
             >
@@ -864,15 +966,11 @@ export default function ConfigPage() {
 
                   <div className="flex items-center gap-3">
 
-                    {/* LOGO */}
-
                     <div
                       className="flex items-center justify-center overflow-hidden rounded-xl bg-white"
                       style={{
-                        width:
-                          tamanhoLogo,
-                        height:
-                          tamanhoLogo,
+                        width: tamanhoLogo,
+                        height: tamanhoLogo,
                       }}
                     >
 
@@ -888,8 +986,6 @@ export default function ConfigPage() {
                       />
 
                     </div>
-
-                    {/* NOME */}
 
                     <div>
 
@@ -943,8 +1039,7 @@ export default function ConfigPage() {
                 <p
                   className="text-xs font-black uppercase tracking-wider"
                   style={{
-                    color:
-                      corPrincipal,
+                    color: corPrincipal,
                   }}
                 >
                   Pedido rápido
@@ -1078,11 +1173,9 @@ export default function ConfigPage() {
               </div>
 
             </div>
-
           </div>
 
         </div>
-
       </div>
     </main>
   );
