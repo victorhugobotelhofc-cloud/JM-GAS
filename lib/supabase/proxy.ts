@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSession(request: NextRequest) {
+export async function updateSession(
+  request: NextRequest
+) {
   let response = NextResponse.next({
     request,
   });
@@ -46,21 +48,37 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const protegido =
+  const rotaProtegida =
     pathname.startsWith("/point") ||
     pathname.startsWith("/jm") ||
     pathname.startsWith("/config");
 
-  if (protegido && !user) {
+  // Sem login → manda para /login
+  // e guarda qual página o usuário queria abrir.
+  if (rotaProtegida && !user) {
     const url = request.nextUrl.clone();
+
     url.pathname = "/login";
+
+    url.searchParams.set(
+      "next",
+      request.nextUrl.pathname
+    );
 
     return NextResponse.redirect(url);
   }
 
+  // Se já estiver logado e abrir /login,
+  // manda para a página solicitada ou para /point.
   if (pathname.startsWith("/login") && user) {
+    const destino =
+      request.nextUrl.searchParams.get("next") ||
+      "/point";
+
     const url = request.nextUrl.clone();
-    url.pathname = "/jm";
+
+    url.pathname = destino;
+    url.search = "";
 
     return NextResponse.redirect(url);
   }
