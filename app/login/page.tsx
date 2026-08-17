@@ -1,28 +1,56 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const EMAIL_AUTORIZADO = "jmgashugo747@gmail.com";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [entrando, setEntrando] = useState(false);
 
+  const destino =
+    searchParams.get("next") || "/point";
+
+  useEffect(() => {
+    async function verificarSessao() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        router.replace(destino);
+      }
+    }
+
+    verificarSessao();
+  }, [router, destino]);
+
   async function fazerLogin(e: FormEvent) {
     e.preventDefault();
 
     setErro("");
 
-    const emailDigitado = email.trim().toLowerCase();
+    const emailDigitado =
+      email.trim().toLowerCase();
 
-    if (emailDigitado !== EMAIL_AUTORIZADO) {
-      setErro("E-mail ou senha incorretos.");
+    if (
+      emailDigitado !==
+      EMAIL_AUTORIZADO
+    ) {
+      setErro(
+        "E-mail ou senha incorretos."
+      );
       return;
     }
 
@@ -34,46 +62,41 @@ export default function LoginPage() {
     setEntrando(true);
 
     try {
-      const login = supabase.auth.signInWithPassword({
-        email: emailDigitado,
-        password: senha,
-      });
-
-      const timeout = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(
-            new Error(
-              "A conexão com o Supabase demorou demais. Verifique as variáveis do Supabase e tente novamente."
-            )
-          );
-        }, 10000);
-      });
-
-      const { data, error } = await Promise.race([
-        login,
-        timeout,
-      ]);
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email: emailDigitado,
+          password: senha,
+        });
 
       if (error) {
-        console.error("Erro no login:", error);
+        console.error(
+          "Erro no login:",
+          error
+        );
+
         setErro(error.message);
         return;
       }
 
-      if (!data?.session) {
-        setErro("O login não criou uma sessão.");
+      if (!data.session) {
+        setErro(
+          "O login não criou uma sessão."
+        );
         return;
       }
 
-      router.replace("/point");
+      router.replace(destino);
     } catch (error) {
-      console.error("Erro no login:", error);
+      console.error(
+        "Erro no login:",
+        error
+      );
 
-      if (error instanceof Error) {
-        setErro(error.message);
-      } else {
-        setErro("Não foi possível fazer login.");
-      }
+      setErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível fazer login."
+      );
     } finally {
       setEntrando(false);
     }
@@ -84,14 +107,16 @@ export default function LoginPage() {
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl ring-1 ring-zinc-200">
 
         <div className="mb-7 text-center">
-          <div className="text-5xl">🔐</div>
+          <div className="text-5xl">
+            🔐
+          </div>
 
           <h1 className="mt-3 text-3xl font-black text-zinc-950">
             Área Restrita
           </h1>
 
           <p className="mt-2 text-sm text-zinc-500">
-            Entre para acessar o POINT JM.
+            Entre para acessar o sistema.
           </p>
         </div>
 
@@ -151,6 +176,7 @@ export default function LoginPage() {
               : "ENTRAR"}
           </button>
         </form>
+
       </div>
     </main>
   );
