@@ -80,7 +80,9 @@ export default function ConfigPage() {
       if (cancelado) return;
 
       if (error || !user) {
-        router.replace("/login");
+        router.replace(
+          "/login?next=/config"
+        );
         return;
       }
 
@@ -94,7 +96,9 @@ export default function ConfigPage() {
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
-          router.replace("/login");
+          router.replace(
+            "/login?next=/config"
+          );
         }
       }
     );
@@ -127,6 +131,11 @@ export default function ConfigPage() {
         "Erro ao carregar configuração:",
         error
       );
+
+      setMensagem(
+        `Erro ao carregar configuração: ${error.message}`
+      );
+
       return;
     }
 
@@ -200,6 +209,8 @@ export default function ConfigPage() {
     setEstiloCards(
       data.estilo_cards || "arredondado"
     );
+
+    setMensagem("");
   }
 
   // =========================
@@ -210,86 +221,222 @@ export default function ConfigPage() {
     setSalvando(true);
     setMensagem("");
 
-    const { data: configuracao, error: erroBusca } =
-      await supabase
+    try {
+      // Verifica novamente se existe usuário logado
+      const {
+        data: { user },
+        error: erroUsuario,
+      } = await supabase.auth.getUser();
+
+      if (erroUsuario || !user) {
+        setMensagem(
+          "Sua sessão expirou. Faça login novamente."
+        );
+
+        router.replace(
+          "/login?next=/config"
+        );
+
+        return;
+      }
+
+      // Procura a configuração existente
+      const {
+        data: configuracao,
+        error: erroBusca,
+      } = await supabase
         .from("configuracao")
         .select("id")
         .limit(1)
         .single();
 
-    if (erroBusca) {
-      console.error(
-        "Erro ao encontrar configuração:",
-        erroBusca
-      );
+      if (erroBusca) {
+        console.error(
+          "Erro ao encontrar configuração:",
+          erroBusca
+        );
+
+        setMensagem(
+          `Erro ao encontrar configuração: ${erroBusca.message}`
+        );
+
+        return;
+      }
+
+      if (!configuracao) {
+        setMensagem(
+          "Configuração não encontrada."
+        );
+
+        return;
+      }
+
+      // Atualiza a configuração
+      const { error } = await supabase
+        .from("configuracao")
+        .update({
+          nome_empresa: nomeEmpresa,
+          texto_principal: textoPrincipal,
+
+          cor_principal: corPrincipal,
+          cor_fundo: corFundo,
+          cor_card: corCard,
+
+          cor_cabecalho: corCabecalho,
+          cor_fonte_cabecalho:
+            corFonteCabecalho,
+
+          subtitulo_cabecalho:
+            subtituloCabecalho,
+
+          imagem_logo: imagemLogo,
+          imagem_icone_gas: imagemGas,
+          imagem_icone_agua: imagemAgua,
+
+          mostrar_pedidos_online:
+            mostrarPedidos,
+
+          tamanho_logo: tamanhoLogo,
+          tamanho_icone: tamanhoIcone,
+
+          estilo_cards: estiloCards,
+        })
+        .eq("id", configuracao.id);
+
+      if (error) {
+        console.error(
+          "Erro ao salvar configuração:",
+          error
+        );
+
+        setMensagem(
+          `Erro ao salvar: ${error.message}`
+        );
+
+        return;
+      }
+
+      // Confirma que realmente foi atualizado
+      const {
+        data: configuracaoAtualizada,
+        error: erroConfirmacao,
+      } = await supabase
+        .from("configuracao")
+        .select("*")
+        .eq("id", configuracao.id)
+        .single();
+
+      if (erroConfirmacao) {
+        console.error(
+          "Erro ao confirmar alteração:",
+          erroConfirmacao
+        );
+
+        setMensagem(
+          "Configuração salva, mas não foi possível confirmar a alteração."
+        );
+
+        return;
+      }
+
+      // Atualiza a tela com o que realmente está no banco
+      if (configuracaoAtualizada) {
+        setNomeEmpresa(
+          configuracaoAtualizada.nome_empresa ||
+            "JM GÁS"
+        );
+
+        setTextoPrincipal(
+          configuracaoAtualizada.texto_principal ||
+            "Faça seu pedido de forma rápida e fácil."
+        );
+
+        setCorPrincipal(
+          configuracaoAtualizada.cor_principal ||
+            "#dc2626"
+        );
+
+        setCorFundo(
+          configuracaoAtualizada.cor_fundo ||
+            "#f4f4f5"
+        );
+
+        setCorCard(
+          configuracaoAtualizada.cor_card ||
+            "#ffffff"
+        );
+
+        setCorCabecalho(
+          configuracaoAtualizada.cor_cabecalho ||
+            "#09090b"
+        );
+
+        setCorFonteCabecalho(
+          configuracaoAtualizada.cor_fonte_cabecalho ||
+            "#ffffff"
+        );
+
+        setSubtituloCabecalho(
+          configuracaoAtualizada.subtitulo_cabecalho ||
+            "Gás e água na sua casa"
+        );
+
+        setImagemLogo(
+          configuracaoAtualizada.imagem_logo ||
+            configuracaoAtualizada.imagem_botijao ||
+            "/botijao.jpg"
+        );
+
+        setImagemGas(
+          configuracaoAtualizada.imagem_icone_gas ||
+            configuracaoAtualizada.imagem_botijao ||
+            "/botijao.jpg"
+        );
+
+        setImagemAgua(
+          configuracaoAtualizada.imagem_icone_agua ||
+            configuracaoAtualizada.imagem_agua ||
+            "/agua.jpg"
+        );
+
+        setMostrarPedidos(
+          configuracaoAtualizada.mostrar_pedidos_online ??
+            true
+        );
+
+        setTamanhoLogo(
+          configuracaoAtualizada.tamanho_logo ||
+            56
+        );
+
+        setTamanhoIcone(
+          configuracaoAtualizada.tamanho_icone ||
+            64
+        );
+
+        setEstiloCards(
+          configuracaoAtualizada.estilo_cards ||
+            "arredondado"
+        );
+      }
 
       setMensagem(
-        "Não foi possível encontrar a configuração."
+        "Configuração salva com sucesso! 🔥"
       );
-
-      setSalvando(false);
-      return;
-    }
-
-    if (!configuracao) {
-      setMensagem(
-        "Configuração não encontrada."
-      );
-
-      setSalvando(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from("configuracao")
-      .update({
-        nome_empresa: nomeEmpresa,
-        texto_principal: textoPrincipal,
-
-        cor_principal: corPrincipal,
-        cor_fundo: corFundo,
-        cor_card: corCard,
-
-        cor_cabecalho: corCabecalho,
-        cor_fonte_cabecalho:
-          corFonteCabecalho,
-
-        subtitulo_cabecalho:
-          subtituloCabecalho,
-
-        imagem_logo: imagemLogo,
-        imagem_icone_gas: imagemGas,
-        imagem_icone_agua: imagemAgua,
-
-        mostrar_pedidos_online:
-          mostrarPedidos,
-
-        tamanho_logo: tamanhoLogo,
-        tamanho_icone: tamanhoIcone,
-
-        estilo_cards: estiloCards,
-      })
-      .eq("id", configuracao.id);
-
-    if (error) {
+    } catch (error) {
       console.error(
-        "Erro ao salvar configuração:",
+        "Erro inesperado ao salvar:",
         error
       );
 
       setMensagem(
-        "Erro ao salvar configuração."
+        error instanceof Error
+          ? `Erro: ${error.message}`
+          : "Erro inesperado ao salvar."
       );
-
+    } finally {
       setSalvando(false);
-      return;
     }
-
-    setMensagem(
-      "Configuração salva com sucesso! 🔥"
-    );
-
-    setSalvando(false);
   }
 
   // =========================
@@ -298,7 +445,10 @@ export default function ConfigPage() {
 
   async function sair() {
     await supabase.auth.signOut();
-    router.replace("/login");
+
+    router.replace(
+      "/login?next=/config"
+    );
   }
 
   // =========================
@@ -444,8 +594,6 @@ export default function ConfigPage() {
                 do projeto.
               </p>
 
-              {/* LOGO */}
-
               <label className="mb-2 block text-sm font-bold text-zinc-700">
                 Logo
               </label>
@@ -463,7 +611,6 @@ export default function ConfigPage() {
 
               <div className="mt-3 flex items-center gap-3">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-zinc-100">
-
                   <Image
                     src={
                       imagemLogo ||
@@ -474,15 +621,12 @@ export default function ConfigPage() {
                     height={64}
                     className="h-full w-full object-contain"
                   />
-
                 </div>
 
                 <span className="text-xs text-zinc-500">
                   Preview da logo
                 </span>
               </div>
-
-              {/* GÁS */}
 
               <label className="mb-2 mt-6 block text-sm font-bold text-zinc-700">
                 Imagem do botijão
@@ -501,7 +645,6 @@ export default function ConfigPage() {
 
               <div className="mt-3 flex items-center gap-3">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-
                   <Image
                     src={
                       imagemGas ||
@@ -512,15 +655,12 @@ export default function ConfigPage() {
                     height={64}
                     className="h-full w-full object-contain"
                   />
-
                 </div>
 
                 <span className="text-xs text-zinc-500">
                   Preview do gás
                 </span>
               </div>
-
-              {/* ÁGUA */}
 
               <label className="mb-2 mt-6 block text-sm font-bold text-zinc-700">
                 Imagem da água
@@ -539,7 +679,6 @@ export default function ConfigPage() {
 
               <div className="mt-3 flex items-center gap-3">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
-
                   <Image
                     src={
                       imagemAgua ||
@@ -550,7 +689,6 @@ export default function ConfigPage() {
                     height={64}
                     className="h-full w-full object-contain"
                   />
-
                 </div>
 
                 <span className="text-xs text-zinc-500">
@@ -573,7 +711,6 @@ export default function ConfigPage() {
               </label>
 
               <div className="flex gap-3">
-
                 <input
                   type="color"
                   value={corCabecalho}
@@ -594,7 +731,6 @@ export default function ConfigPage() {
                   }
                   className="flex-1 rounded-xl border border-zinc-200 px-4 font-mono uppercase"
                 />
-
               </div>
 
               <label className="mb-2 mt-5 block text-sm font-bold text-zinc-700">
@@ -602,7 +738,6 @@ export default function ConfigPage() {
               </label>
 
               <div className="flex gap-3">
-
                 <input
                   type="color"
                   value={corFonteCabecalho}
@@ -623,7 +758,6 @@ export default function ConfigPage() {
                   }
                   className="flex-1 rounded-xl border border-zinc-200 px-4 font-mono uppercase"
                 />
-
               </div>
 
               <label className="mb-2 mt-5 block text-sm font-bold text-zinc-700">
@@ -641,7 +775,6 @@ export default function ConfigPage() {
               />
 
               <label className="mt-5 flex cursor-pointer items-center justify-between rounded-xl bg-zinc-50 p-4">
-
                 <div>
                   <p className="font-bold text-zinc-900">
                     Mostrar "PEDIDOS ONLINE"
@@ -662,13 +795,10 @@ export default function ConfigPage() {
                   }
                   className="h-5 w-5"
                 />
-
               </label>
 
               <div className="mt-5">
-
                 <div className="mb-2 flex justify-between">
-
                   <label className="text-sm font-bold text-zinc-700">
                     Tamanho da logo
                   </label>
@@ -676,7 +806,6 @@ export default function ConfigPage() {
                   <span className="text-sm font-bold text-zinc-500">
                     {tamanhoLogo}px
                   </span>
-
                 </div>
 
                 <input
@@ -691,7 +820,6 @@ export default function ConfigPage() {
                   }
                   className="w-full"
                 />
-
               </div>
 
             </section>
@@ -711,7 +839,6 @@ export default function ConfigPage() {
               <div className="grid grid-cols-2 gap-3">
 
                 <div className="rounded-2xl bg-red-50 p-4">
-
                   <div
                     className="mx-auto flex items-center justify-center overflow-hidden rounded-xl bg-white"
                     style={{
@@ -719,7 +846,6 @@ export default function ConfigPage() {
                       height: tamanhoIcone,
                     }}
                   >
-
                     <Image
                       src={
                         imagemGas ||
@@ -730,17 +856,14 @@ export default function ConfigPage() {
                       height={100}
                       className="h-full w-full object-contain"
                     />
-
                   </div>
 
                   <p className="mt-3 text-center font-black">
                     Gás
                   </p>
-
                 </div>
 
                 <div className="rounded-2xl bg-blue-50 p-4">
-
                   <div
                     className="mx-auto flex items-center justify-center overflow-hidden rounded-xl bg-white"
                     style={{
@@ -748,7 +871,6 @@ export default function ConfigPage() {
                       height: tamanhoIcone,
                     }}
                   >
-
                     <Image
                       src={
                         imagemAgua ||
@@ -759,21 +881,17 @@ export default function ConfigPage() {
                       height={100}
                       className="h-full w-full object-contain"
                     />
-
                   </div>
 
                   <p className="mt-3 text-center font-black">
                     Água
                   </p>
-
                 </div>
 
               </div>
 
               <div className="mt-5">
-
                 <div className="mb-2 flex justify-between">
-
                   <label className="text-sm font-bold text-zinc-700">
                     Tamanho dos ícones
                   </label>
@@ -781,7 +899,6 @@ export default function ConfigPage() {
                   <span className="text-sm font-bold text-zinc-500">
                     {tamanhoIcone}px
                   </span>
-
                 </div>
 
                 <input
@@ -796,7 +913,6 @@ export default function ConfigPage() {
                   }
                   className="w-full"
                 />
-
               </div>
 
             </section>
@@ -880,32 +996,31 @@ export default function ConfigPage() {
                   ["arredondado", "Arredondado"],
                   ["medio", "Médio"],
                   ["quadrado", "Quadrado"],
-                ].map(
-                  ([valor, nome]) => (
-                    <button
-                      key={valor}
-                      type="button"
-                      onClick={() =>
-                        setEstiloCards(valor)
-                      }
-                      className={`border-2 p-3 text-sm font-bold ${
-                        estiloCards === valor
-                          ? "border-red-600 bg-red-50 text-red-600"
-                          : "border-zinc-200 text-zinc-600"
-                      }`}
-                      style={{
-                        borderRadius:
-                          valor === "arredondado"
-                            ? "16px"
-                            : valor === "medio"
-                            ? "10px"
-                            : "3px",
-                      }}
-                    >
-                      {nome}
-                    </button>
-                  )
-                )}
+                ].map(([valor, nome]) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    onClick={() =>
+                      setEstiloCards(valor)
+                    }
+                    className={`border-2 p-3 text-sm font-bold ${
+                      estiloCards === valor
+                        ? "border-red-600 bg-red-50 text-red-600"
+                        : "border-zinc-200 text-zinc-600"
+                    }`}
+                    style={{
+                      borderRadius:
+                        valor ===
+                        "arredondado"
+                          ? "16px"
+                          : valor === "medio"
+                          ? "10px"
+                          : "3px",
+                    }}
+                  >
+                    {nome}
+                  </button>
+                ))}
 
               </div>
 
@@ -915,7 +1030,9 @@ export default function ConfigPage() {
 
             <button
               type="button"
-              onClick={salvarConfiguracao}
+              onClick={
+                salvarConfiguracao
+              }
               disabled={salvando}
               className="w-full rounded-2xl bg-zinc-950 px-5 py-5 text-lg font-black text-white shadow-lg transition hover:bg-zinc-800 disabled:opacity-50"
             >
@@ -932,9 +1049,7 @@ export default function ConfigPage() {
 
           </div>
 
-          {/* ========================= */}
           {/* PREVIEW */}
-          {/* ========================= */}
 
           <div className="lg:sticky lg:top-5 lg:self-start">
 
@@ -945,8 +1060,10 @@ export default function ConfigPage() {
             <div
               className="overflow-hidden shadow-2xl"
               style={{
-                backgroundColor: corFundo,
-                borderRadius: radius,
+                backgroundColor:
+                  corFundo,
+                borderRadius:
+                  radius,
               }}
             >
 
@@ -969,11 +1086,12 @@ export default function ConfigPage() {
                     <div
                       className="flex items-center justify-center overflow-hidden rounded-xl bg-white"
                       style={{
-                        width: tamanhoLogo,
-                        height: tamanhoLogo,
+                        width:
+                          tamanhoLogo,
+                        height:
+                          tamanhoLogo,
                       }}
                     >
-
                       <Image
                         src={
                           imagemLogo ||
@@ -984,11 +1102,9 @@ export default function ConfigPage() {
                         height={100}
                         className="h-full w-full object-contain"
                       />
-
                     </div>
 
                     <div>
-
                       <h2
                         className="text-xl font-black"
                         style={{
@@ -1009,7 +1125,6 @@ export default function ConfigPage() {
                       >
                         {subtituloCabecalho}
                       </p>
-
                     </div>
 
                   </div>
@@ -1039,7 +1154,8 @@ export default function ConfigPage() {
                 <p
                   className="text-xs font-black uppercase tracking-wider"
                   style={{
-                    color: corPrincipal,
+                    color:
+                      corPrincipal,
                   }}
                 >
                   Pedido rápido
@@ -1076,7 +1192,6 @@ export default function ConfigPage() {
                           tamanhoIcone,
                       }}
                     >
-
                       <Image
                         src={
                           imagemGas ||
@@ -1087,11 +1202,9 @@ export default function ConfigPage() {
                         height={100}
                         className="h-full w-full object-contain"
                       />
-
                     </div>
 
                     <div>
-
                       <p className="font-black">
                         Botijão de cozinha
                       </p>
@@ -1099,7 +1212,6 @@ export default function ConfigPage() {
                       <p className="text-xs text-zinc-500">
                         Gás de cozinha
                       </p>
-
                     </div>
 
                   </div>
@@ -1129,7 +1241,6 @@ export default function ConfigPage() {
                           tamanhoIcone,
                       }}
                     >
-
                       <Image
                         src={
                           imagemAgua ||
@@ -1140,11 +1251,9 @@ export default function ConfigPage() {
                         height={100}
                         className="h-full w-full object-contain"
                       />
-
                     </div>
 
                     <div>
-
                       <p className="font-black">
                         Água
                       </p>
@@ -1152,7 +1261,6 @@ export default function ConfigPage() {
                       <p className="text-xs text-zinc-500">
                         Água para sua casa
                       </p>
-
                     </div>
 
                   </div>
@@ -1173,6 +1281,7 @@ export default function ConfigPage() {
               </div>
 
             </div>
+
           </div>
 
         </div>
