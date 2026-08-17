@@ -10,14 +10,18 @@ type Configuracao = {
   cor_principal: string;
   cor_fundo: string;
   cor_card: string;
+
   imagem_logo: string | null;
   imagem_icone_gas: string | null;
   imagem_icone_agua: string | null;
+
   estilo_cards: string;
+
   cor_cabecalho: string;
   cor_fonte_cabecalho: string;
   subtitulo_cabecalho: string;
   mostrar_pedidos_online: boolean;
+
   tamanho_logo: number;
   tamanho_icone: number;
 };
@@ -25,18 +29,28 @@ type Configuracao = {
 export default function Home() {
   const [config, setConfig] = useState<Configuracao>({
     nome_empresa: "JM GÁS",
-    texto_principal: "Faça seu pedido de forma rápida e fácil.",
+
+    texto_principal:
+      "Faça seu pedido de forma rápida e fácil.",
+
     cor_principal: "#dc2626",
     cor_fundo: "#f4f4f5",
     cor_card: "#ffffff",
+
     imagem_logo: "/botijao.jpg",
     imagem_icone_gas: "/botijao.jpg",
     imagem_icone_agua: "/agua.jpg",
+
     estilo_cards: "arredondado",
+
     cor_cabecalho: "#09090b",
     cor_fonte_cabecalho: "#ffffff",
-    subtitulo_cabecalho: "Gás e água na sua casa",
+
+    subtitulo_cabecalho:
+      "Gás e água na sua casa",
+
     mostrar_pedidos_online: true,
+
     tamanho_logo: 56,
     tamanho_icone: 64,
   });
@@ -60,7 +74,9 @@ export default function Home() {
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
-  const [buscandoCep, setBuscandoCep] = useState(false);
+
+  const [buscandoCep, setBuscandoCep] =
+    useState(false);
 
   // =========================
   // PRODUTOS
@@ -73,9 +89,14 @@ export default function Home() {
   // OUTROS
   // =========================
 
-  const [observacao, setObservacao] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [mensagem, setMensagem] = useState("");
+  const [observacao, setObservacao] =
+    useState("");
+
+  const [enviando, setEnviando] =
+    useState(false);
+
+  const [mensagem, setMensagem] =
+    useState("");
 
   // =========================
   // CONFIGURAÇÃO
@@ -93,24 +114,32 @@ export default function Home() {
       .single();
 
     if (error) {
-      console.error("Erro ao carregar configuração:", error);
+      console.error(
+        "Erro ao carregar configuração:",
+        error
+      );
+
       return;
     }
 
     if (!data) return;
 
     setConfig({
-      nome_empresa: data.nome_empresa || "JM GÁS",
+      nome_empresa:
+        data.nome_empresa || "JM GÁS",
 
       texto_principal:
         data.texto_principal ||
         "Faça seu pedido de forma rápida e fácil.",
 
-      cor_principal: data.cor_principal || "#dc2626",
+      cor_principal:
+        data.cor_principal || "#dc2626",
 
-      cor_fundo: data.cor_fundo || "#f4f4f5",
+      cor_fundo:
+        data.cor_fundo || "#f4f4f5",
 
-      cor_card: data.cor_card || "#ffffff",
+      cor_card:
+        data.cor_card || "#ffffff",
 
       imagem_logo:
         data.imagem_logo ||
@@ -128,13 +157,16 @@ export default function Home() {
         "/agua.jpg",
 
       estilo_cards:
-        data.estilo_cards || "arredondado",
+        data.estilo_cards ||
+        "arredondado",
 
       cor_cabecalho:
-        data.cor_cabecalho || "#09090b",
+        data.cor_cabecalho ||
+        "#09090b",
 
       cor_fonte_cabecalho:
-        data.cor_fonte_cabecalho || "#ffffff",
+        data.cor_fonte_cabecalho ||
+        "#ffffff",
 
       subtitulo_cabecalho:
         data.subtitulo_cabecalho ||
@@ -162,7 +194,10 @@ export default function Home() {
 
     const cepFormatado =
       cepLimpo.length > 5
-        ? `${cepLimpo.slice(0, 5)}-${cepLimpo.slice(5)}`
+        ? `${cepLimpo.slice(
+            0,
+            5
+          )}-${cepLimpo.slice(5)}`
         : cepLimpo;
 
     setCep(cepFormatado);
@@ -180,24 +215,43 @@ export default function Home() {
       );
 
       if (!resposta.ok) {
-        throw new Error("Erro ao consultar CEP");
+        throw new Error(
+          "Erro ao consultar CEP"
+        );
       }
 
       const dados = await resposta.json();
 
       if (dados.erro) {
-        setMensagem("CEP não encontrado.");
+        setMensagem(
+          "CEP não encontrado."
+        );
+
         return;
       }
 
-      setRua(dados.logradouro || "");
-      setBairro(dados.bairro || "");
-      setCidade(dados.localidade || "");
-      setEstado(dados.uf || "");
+      setRua(
+        dados.logradouro || ""
+      );
+
+      setBairro(
+        dados.bairro || ""
+      );
+
+      setCidade(
+        dados.localidade || ""
+      );
+
+      setEstado(
+        dados.uf || ""
+      );
 
       setMensagem("");
     } catch (error) {
-      console.error("Erro ao buscar CEP:", error);
+      console.error(
+        "Erro ao buscar CEP:",
+        error
+      );
 
       setMensagem(
         "Não foi possível consultar o CEP. Tente novamente."
@@ -212,14 +266,16 @@ export default function Home() {
   // =========================
 
   const radius =
-    config.estilo_cards === "arredondado"
+    config.estilo_cards ===
+    "arredondado"
       ? "28px"
       : config.estilo_cards === "medio"
       ? "16px"
       : "4px";
 
   const cardRadius =
-    config.estilo_cards === "arredondado"
+    config.estilo_cards ===
+    "arredondado"
       ? "20px"
       : config.estilo_cards === "medio"
       ? "12px"
@@ -229,7 +285,9 @@ export default function Home() {
   // FAZER PEDIDO
   // =========================
 
-  async function fazerPedido(e: React.FormEvent) {
+  async function fazerPedido(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
     // =========================
@@ -237,13 +295,16 @@ export default function Home() {
     // =========================
 
     if (gas === 0 && agua === 0) {
-      setMensagem("Escolha pelo menos um produto.");
+      setMensagem(
+        "Escolha pelo menos um produto."
+      );
+
       return;
     }
 
     // =========================
     // VALIDAR DADOS
-    // EMAIL NÃO É OBRIGATÓRIO
+    // E-MAIL NÃO É OBRIGATÓRIO
     // =========================
 
     if (
@@ -329,6 +390,7 @@ export default function Home() {
       );
 
       setEnviando(false);
+
       return;
     }
 
@@ -368,7 +430,8 @@ export default function Home() {
     <main
       className="min-h-screen transition-colors"
       style={{
-        backgroundColor: config.cor_fundo,
+        backgroundColor:
+          config.cor_fundo,
       }}
     >
       {/* ========================= */}
@@ -378,8 +441,11 @@ export default function Home() {
       <header
         className="px-4 py-4 shadow-lg"
         style={{
-          backgroundColor: config.cor_cabecalho,
-          color: config.cor_fonte_cabecalho,
+          backgroundColor:
+            config.cor_cabecalho,
+
+          color:
+            config.cor_fonte_cabecalho,
         }}
       >
         <div className="mx-auto flex max-w-2xl items-center justify-between">
@@ -389,8 +455,11 @@ export default function Home() {
             <div
               className="flex items-center justify-center overflow-hidden rounded-xl bg-white shadow"
               style={{
-                width: config.tamanho_logo,
-                height: config.tamanho_logo,
+                width:
+                  config.tamanho_logo,
+
+                height:
+                  config.tamanho_logo,
               }}
             >
               <Image
@@ -460,7 +529,8 @@ export default function Home() {
           <p
             className="mb-2 text-sm font-bold uppercase tracking-wider"
             style={{
-              color: config.cor_principal,
+              color:
+                config.cor_principal,
             }}
           >
             Pedido rápido
@@ -486,7 +556,9 @@ export default function Home() {
           <section
             className="p-5 shadow-sm ring-1 ring-zinc-200"
             style={{
-              backgroundColor: config.cor_card,
+              backgroundColor:
+                config.cor_card,
+
               borderRadius: radius,
             }}
           >
@@ -505,7 +577,8 @@ export default function Home() {
             <div
               className="border border-zinc-200 p-4"
               style={{
-                borderRadius: cardRadius,
+                borderRadius:
+                  cardRadius,
               }}
             >
               <div className="flex items-center justify-between gap-4">
@@ -513,8 +586,11 @@ export default function Home() {
                   <div
                     className="flex items-center justify-center overflow-hidden rounded-xl bg-red-50"
                     style={{
-                      width: config.tamanho_icone,
-                      height: config.tamanho_icone,
+                      width:
+                        config.tamanho_icone,
+
+                      height:
+                        config.tamanho_icone,
                     }}
                   >
                     <Image
@@ -545,7 +621,10 @@ export default function Home() {
                     type="button"
                     onClick={() =>
                       setGas(
-                        Math.max(0, gas - 1)
+                        Math.max(
+                          0,
+                          gas - 1
+                        )
                       )
                     }
                     className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700"
@@ -579,7 +658,8 @@ export default function Home() {
             <div
               className="mt-3 border border-zinc-200 p-4"
               style={{
-                borderRadius: cardRadius,
+                borderRadius:
+                  cardRadius,
               }}
             >
               <div className="flex items-center justify-between gap-4">
@@ -587,8 +667,11 @@ export default function Home() {
                   <div
                     className="flex items-center justify-center overflow-hidden rounded-xl bg-blue-50"
                     style={{
-                      width: config.tamanho_icone,
-                      height: config.tamanho_icone,
+                      width:
+                        config.tamanho_icone,
+
+                      height:
+                        config.tamanho_icone,
                     }}
                   >
                     <Image
@@ -619,7 +702,10 @@ export default function Home() {
                     type="button"
                     onClick={() =>
                       setAgua(
-                        Math.max(0, agua - 1)
+                        Math.max(
+                          0,
+                          agua - 1
+                        )
                       )
                     }
                     className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700"
@@ -656,7 +742,9 @@ export default function Home() {
           <section
             className="p-5 shadow-sm ring-1 ring-zinc-200"
             style={{
-              backgroundColor: config.cor_card,
+              backgroundColor:
+                config.cor_card,
+
               borderRadius: radius,
             }}
           >
@@ -692,7 +780,10 @@ export default function Home() {
 
             <div className="mt-4">
               <label className="mb-2 block text-sm font-bold text-zinc-700">
-                E-mail
+                E-mail{" "}
+                <span className="font-normal text-zinc-400">
+                  (OPCIONAL)
+                </span>
               </label>
 
               <input
@@ -701,7 +792,7 @@ export default function Home() {
                 onChange={(e) =>
                   setEmail(e.target.value)
                 }
-                placeholder="seuemail@email.com (opcional)"
+                placeholder="seuemail@email.com"
                 className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
               />
             </div>
@@ -750,7 +841,9 @@ export default function Home() {
                   type="text"
                   value={cep}
                   onChange={(e) =>
-                    buscarCep(e.target.value)
+                    buscarCep(
+                      e.target.value
+                    )
                   }
                   placeholder="00000-000"
                   maxLength={9}
@@ -812,7 +905,9 @@ export default function Home() {
                     type="text"
                     value={complemento}
                     onChange={(e) =>
-                      setComplemento(e.target.value)
+                      setComplemento(
+                        e.target.value
+                      )
                     }
                     placeholder="Casa, apto..."
                     className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 outline-none focus:border-red-500 focus:bg-white"
@@ -888,7 +983,9 @@ export default function Home() {
               <textarea
                 value={observacao}
                 onChange={(e) =>
-                  setObservacao(e.target.value)
+                  setObservacao(
+                    e.target.value
+                  )
                 }
                 placeholder="Ex: tocar campainha, deixar com o vizinho..."
                 rows={3}
