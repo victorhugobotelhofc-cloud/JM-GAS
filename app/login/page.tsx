@@ -33,28 +33,50 @@ export default function LoginPage() {
 
     setEntrando(true);
 
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
+    try {
+      const login = supabase.auth.signInWithPassword({
         email: emailDigitado,
         password: senha,
       });
 
-    if (error) {
+      const timeout = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(
+            new Error(
+              "A conexão com o Supabase demorou demais. Verifique as variáveis do Supabase e tente novamente."
+            )
+          );
+        }, 10000);
+      });
+
+      const { data, error } = await Promise.race([
+        login,
+        timeout,
+      ]);
+
+      if (error) {
+        console.error("Erro no login:", error);
+        setErro(error.message);
+        return;
+      }
+
+      if (!data?.session) {
+        setErro("O login não criou uma sessão.");
+        return;
+      }
+
+      router.replace("/point");
+    } catch (error) {
       console.error("Erro no login:", error);
 
-      setErro(error.message);
+      if (error instanceof Error) {
+        setErro(error.message);
+      } else {
+        setErro("Não foi possível fazer login.");
+      }
+    } finally {
       setEntrando(false);
-
-      return;
     }
-
-    if (!data.session) {
-      setErro("Login não criou uma sessão.");
-      setEntrando(false);
-      return;
-    }
-
-    router.replace("/point");
   }
 
   return (
