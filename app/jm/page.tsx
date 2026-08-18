@@ -11,8 +11,8 @@ type Pedido = {
   email: string | null;
   endereco: string;
 
-  gas: number;
-  agua: number;
+  gas: number | string | null;
+  agua: number | string | null;
 
   observacao: string | null;
   status: string;
@@ -47,9 +47,7 @@ export default function PainelJM() {
       if (cancelado) return;
 
       if (error || !user) {
-        router.replace(
-          "/login?next=/jm"
-        );
+        router.replace("/login?next=/jm");
         return;
       }
 
@@ -63,9 +61,7 @@ export default function PainelJM() {
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
-          router.replace(
-            "/login?next=/jm"
-          );
+          router.replace("/login?next=/jm");
         }
       }
     );
@@ -84,6 +80,8 @@ export default function PainelJM() {
     if (verificandoLogin) return;
 
     async function carregarPedidos() {
+      setCarregando(true);
+
       const { data, error } = await supabase
         .from("pedidos")
         .select("*")
@@ -101,12 +99,30 @@ export default function PainelJM() {
         return;
       }
 
-      setPedidos(data || []);
+      console.log("PEDIDOS RECEBIDOS:", data);
+
+      setPedidos((data || []) as Pedido[]);
       setCarregando(false);
     }
 
     carregarPedidos();
   }, [verificandoLogin]);
+
+  // =========================
+  // CONVERTER QUANTIDADE
+  // =========================
+
+  function quantidadeProduto(
+    valor: number | string | null
+  ) {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero)) {
+      return 0;
+    }
+
+    return numero;
+  }
 
   // =========================
   // MUDAR STATUS
@@ -237,65 +253,55 @@ export default function PainelJM() {
   async function sair() {
     await supabase.auth.signOut();
 
-    router.replace(
-      "/login?next=/jm"
-    );
+    router.replace("/login?next=/jm");
   }
 
   // =========================
-  // STATUS - COR
+  // STATUS
   // =========================
 
   function statusCor(status: string) {
-    if (status === "novo") {
-      return "bg-yellow-100 text-yellow-700";
-    }
+    switch (status) {
+      case "novo":
+        return "bg-yellow-100 text-yellow-700";
 
-    if (status === "aceito") {
-      return "bg-orange-100 text-orange-700";
-    }
+      case "aceito":
+        return "bg-orange-100 text-orange-700";
 
-    if (status === "em_entrega") {
-      return "bg-blue-100 text-blue-700";
-    }
+      case "em_entrega":
+        return "bg-blue-100 text-blue-700";
 
-    if (status === "entregue") {
-      return "bg-green-100 text-green-700";
-    }
+      case "entregue":
+        return "bg-green-100 text-green-700";
 
-    if (status === "cancelado") {
-      return "bg-red-100 text-red-700";
-    }
+      case "cancelado":
+        return "bg-red-100 text-red-700";
 
-    return "bg-zinc-100 text-zinc-700";
+      default:
+        return "bg-zinc-100 text-zinc-700";
+    }
   }
 
-  // =========================
-  // STATUS - NOME
-  // =========================
-
   function statusNome(status: string) {
-    if (status === "novo") {
-      return "NOVO";
-    }
+    switch (status) {
+      case "novo":
+        return "NOVO";
 
-    if (status === "aceito") {
-      return "ACEITO";
-    }
+      case "aceito":
+        return "ACEITO";
 
-    if (status === "em_entrega") {
-      return "EM ENTREGA";
-    }
+      case "em_entrega":
+        return "EM ENTREGA";
 
-    if (status === "entregue") {
-      return "ENTREGUE";
-    }
+      case "entregue":
+        return "ENTREGUE";
 
-    if (status === "cancelado") {
-      return "CANCELADO";
-    }
+      case "cancelado":
+        return "CANCELADO";
 
-    return status.toUpperCase();
+      default:
+        return status.toUpperCase();
+    }
   }
 
   // =========================
@@ -306,9 +312,7 @@ export default function PainelJM() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-6">
         <div className="rounded-3xl bg-white p-8 text-center shadow">
-          <div className="text-4xl">
-            🔐
-          </div>
+          <div className="text-4xl">🔐</div>
 
           <p className="mt-3 font-black text-zinc-900">
             Verificando acesso...
@@ -329,7 +333,6 @@ export default function PainelJM() {
         {/* CABEÇALHO */}
 
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
           <div>
             <h1 className="text-3xl font-black text-zinc-900">
               PAINEL JM
@@ -347,7 +350,6 @@ export default function PainelJM() {
           >
             Sair
           </button>
-
         </div>
 
         {/* CARREGANDO */}
@@ -363,7 +365,6 @@ export default function PainelJM() {
         {!carregando &&
           pedidos.length === 0 && (
             <div className="rounded-2xl bg-white p-8 text-center shadow">
-
               <p className="font-bold text-zinc-900">
                 Nenhum pedido encontrado.
               </p>
@@ -371,7 +372,6 @@ export default function PainelJM() {
               <p className="mt-1 text-sm text-zinc-500">
                 Os novos pedidos aparecerão aqui.
               </p>
-
             </div>
           )}
 
@@ -381,234 +381,254 @@ export default function PainelJM() {
           pedidos.length > 0 && (
             <div className="space-y-5">
 
-              {pedidos.map((pedido) => (
-                <div
-                  key={pedido.id}
-                  className="rounded-3xl bg-white p-6 shadow"
-                >
+              {pedidos.map((pedido) => {
+                const gasQuantidade =
+                  quantidadeProduto(
+                    pedido.gas
+                  );
 
-                  {/* CLIENTE */}
+                const aguaQuantidade =
+                  quantidadeProduto(
+                    pedido.agua
+                  );
 
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                return (
+                  <div
+                    key={pedido.id}
+                    className="rounded-3xl bg-white p-6 shadow"
+                  >
 
-                    <div>
-                      <p className="text-xs font-bold text-zinc-400">
-                        PEDIDO #{pedido.id}
+                    {/* CLIENTE */}
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+                      <div>
+                        <p className="text-xs font-bold text-zinc-400">
+                          PEDIDO #{pedido.id}
+                        </p>
+
+                        <h2 className="mt-1 text-2xl font-black text-zinc-900">
+                          {pedido.nome}
+                        </h2>
+
+                        <div className="mt-2 space-y-1 text-sm text-zinc-500">
+                          <p>
+                            📱 {pedido.whatsapp}
+                          </p>
+
+                          {pedido.email && (
+                            <p>
+                              ✉️ {pedido.email}
+                            </p>
+                          )}
+
+                          <p>
+                            📍 {pedido.endereco}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* STATUS */}
+
+                      <span
+                        className={`w-fit rounded-full px-4 py-2 text-xs font-black ${statusCor(
+                          pedido.status
+                        )}`}
+                      >
+                        {statusNome(
+                          pedido.status
+                        )}
+                      </span>
+                    </div>
+
+                    {/* PRODUTOS */}
+
+                    <div className="mt-6 rounded-2xl bg-zinc-50 p-4">
+
+                      <p className="font-bold text-zinc-900">
+                        Produtos
                       </p>
 
-                      <h2 className="mt-1 text-2xl font-black text-zinc-900">
-                        {pedido.nome}
-                      </h2>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
-                      <div className="mt-2 space-y-1 text-sm text-zinc-500">
+                        {/* GÁS */}
 
-                        <p>
-                          📱 {pedido.whatsapp}
-                        </p>
-
-                        {pedido.email && (
-                          <p>
-                            ✉️ {pedido.email}
+                        <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
+                          <p className="text-sm font-bold text-zinc-500">
+                            🧯 Botijão de cozinha
                           </p>
-                        )}
 
-                        <p>
-                          📍 {pedido.endereco}
+                          <p className="mt-1 text-2xl font-black text-zinc-900">
+                            {gasQuantidade}
+                          </p>
+
+                          <p className="text-xs text-zinc-400">
+                            unidade(s)
+                          </p>
+                        </div>
+
+                        {/* ÁGUA */}
+
+                        <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
+                          <p className="text-sm font-bold text-zinc-500">
+                            💧 Água
+                          </p>
+
+                          <p className="mt-1 text-2xl font-black text-zinc-900">
+                            {aguaQuantidade}
+                          </p>
+
+                          <p className="text-xs text-zinc-400">
+                            unidade(s)
+                          </p>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    {/* OBSERVAÇÃO */}
+
+                    {pedido.observacao && (
+                      <div className="mt-4 rounded-2xl bg-zinc-100 p-4">
+                        <p className="text-xs font-black uppercase text-zinc-400">
+                          Observação
                         </p>
+
+                        <p className="mt-1 text-sm text-zinc-700">
+                          {pedido.observacao}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* AÇÕES */}
+
+                    <div className="mt-6 border-t border-zinc-100 pt-5">
+
+                      <p className="mb-3 text-sm font-bold text-zinc-900">
+                        Alterar status
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id
+                          }
+                          onClick={() =>
+                            mudarStatus(
+                              pedido.id,
+                              "novo"
+                            )
+                          }
+                          className="rounded-xl bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
+                        >
+                          Novo
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id
+                          }
+                          onClick={() =>
+                            mudarStatus(
+                              pedido.id,
+                              "aceito"
+                            )
+                          }
+                          className="rounded-xl bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+                        >
+                          Aceito
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id
+                          }
+                          onClick={() =>
+                            mudarStatus(
+                              pedido.id,
+                              "em_entrega"
+                            )
+                          }
+                          className="rounded-xl bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                        >
+                          Em entrega
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id
+                          }
+                          onClick={() =>
+                            mudarStatus(
+                              pedido.id,
+                              "entregue"
+                            )
+                          }
+                          className="rounded-xl bg-green-100 px-4 py-2 text-sm font-bold text-green-700 hover:bg-green-200 disabled:opacity-50"
+                        >
+                          Entregue
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id ||
+                            pedido.status ===
+                              "cancelado"
+                          }
+                          onClick={() =>
+                            cancelarPedido(
+                              pedido.id
+                            )
+                          }
+                          className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+                        >
+                          {atualizando ===
+                            pedido.id &&
+                          pedido.status !==
+                            "cancelado"
+                            ? "CANCELANDO..."
+                            : "Cancelar"}
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={
+                            atualizando === pedido.id ||
+                            excluindo === pedido.id
+                          }
+                          onClick={() =>
+                            excluirPedido(
+                              pedido.id
+                            )
+                          }
+                          className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-bold text-white hover:bg-zinc-700 disabled:opacity-50"
+                        >
+                          {excluindo === pedido.id
+                            ? "EXCLUINDO..."
+                            : "Excluir"}
+                        </button>
 
                       </div>
                     </div>
 
-                    {/* STATUS */}
-
-                    <span
-                      className={`w-fit rounded-full px-4 py-2 text-xs font-black ${statusCor(
-                        pedido.status
-                      )}`}
-                    >
-                      {statusNome(
-                        pedido.status
-                      )}
-                    </span>
-
                   </div>
-
-                  {/* PRODUTOS */}
-
-                  <div className="mt-6 rounded-2xl bg-zinc-50 p-4">
-
-                    <p className="font-bold text-zinc-900">
-                      Produtos
-                    </p>
-
-                    <div className="mt-2 space-y-1 text-sm text-zinc-600">
-
-                      {pedido.gas > 0 && (
-                        <p>
-                          🧯 {pedido.gas}x Botijão de cozinha
-                        </p>
-                      )}
-
-                      {pedido.agua > 0 && (
-                        <p>
-                          💧 {pedido.agua}x Água
-                        </p>
-                      )}
-
-                      {pedido.gas === 0 &&
-                        pedido.agua === 0 && (
-                          <p className="text-zinc-400">
-                            Nenhum produto informado.
-                          </p>
-                        )}
-
-                    </div>
-
-                  </div>
-
-                  {/* OBSERVAÇÃO */}
-
-                  {pedido.observacao && (
-                    <div className="mt-4 rounded-2xl bg-zinc-100 p-4">
-
-                      <p className="text-xs font-black uppercase text-zinc-400">
-                        Observação
-                      </p>
-
-                      <p className="mt-1 text-sm text-zinc-700">
-                        {pedido.observacao}
-                      </p>
-
-                    </div>
-                  )}
-
-                  {/* AÇÕES */}
-
-                  <div className="mt-6 border-t border-zinc-100 pt-5">
-
-                    <p className="mb-3 text-sm font-bold text-zinc-900">
-                      Alterar status
-                    </p>
-
-                    <div className="flex flex-wrap gap-2">
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id
-                        }
-                        onClick={() =>
-                          mudarStatus(
-                            pedido.id,
-                            "novo"
-                          )
-                        }
-                        className="rounded-xl bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
-                      >
-                        Novo
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id
-                        }
-                        onClick={() =>
-                          mudarStatus(
-                            pedido.id,
-                            "aceito"
-                          )
-                        }
-                        className="rounded-xl bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
-                      >
-                        Aceito
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id
-                        }
-                        onClick={() =>
-                          mudarStatus(
-                            pedido.id,
-                            "em_entrega"
-                          )
-                        }
-                        className="rounded-xl bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
-                      >
-                        Em entrega
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id
-                        }
-                        onClick={() =>
-                          mudarStatus(
-                            pedido.id,
-                            "entregue"
-                          )
-                        }
-                        className="rounded-xl bg-green-100 px-4 py-2 text-sm font-bold text-green-700 hover:bg-green-200 disabled:opacity-50"
-                      >
-                        Entregue
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id ||
-                          pedido.status ===
-                            "cancelado"
-                        }
-                        onClick={() =>
-                          cancelarPedido(
-                            pedido.id
-                          )
-                        }
-                        className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
-                      >
-                        {atualizando === pedido.id &&
-                        pedido.status !==
-                          "cancelado"
-                          ? "CANCELANDO..."
-                          : "Cancelar"}
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={
-                          atualizando === pedido.id ||
-                          excluindo === pedido.id
-                        }
-                        onClick={() =>
-                          excluirPedido(
-                            pedido.id
-                          )
-                        }
-                        className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-bold text-white hover:bg-zinc-700 disabled:opacity-50"
-                      >
-                        {excluindo === pedido.id
-                          ? "EXCLUINDO..."
-                          : "Excluir"}
-                      </button>
-
-                    </div>
-                  </div>
-
-                </div>
-              ))}
+                );
+              })}
 
             </div>
           )}
-
       </div>
     </main>
   );
