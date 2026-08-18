@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 
 type StatusPedido =
   | "novo"
-  | "aceito"
   | "em_entrega"
   | "entregue"
   | "cancelado";
@@ -17,10 +16,8 @@ type Pedido = {
   whatsapp: string;
   email: string | null;
   endereco: string;
-
   gas: number | string | null;
   agua: number | string | null;
-
   observacao: string | null;
   status: string;
   criado_em: string;
@@ -117,7 +114,10 @@ export default function PainelJM() {
 
   async function alterarStatus(
     id: number,
-    novoStatus: StatusPedido
+    novoStatus:
+      | "em_entrega"
+      | "entregue"
+      | "cancelado"
   ) {
     const confirmar =
       novoStatus === "cancelado"
@@ -166,7 +166,7 @@ export default function PainelJM() {
   }
 
   // =========================
-  // APAGAR DEFINITIVAMENTE
+  // APAGAR DE VERDADE
   // =========================
 
   async function apagarPedido(id: number) {
@@ -231,16 +231,13 @@ export default function PainelJM() {
   }
 
   // =========================
-  // STATUS - COR
+  // STATUS
   // =========================
 
   function statusCor(status: string) {
     switch (status) {
       case "novo":
         return "bg-red-100 text-red-700 border-red-200";
-
-      case "aceito":
-        return "bg-orange-100 text-orange-700 border-orange-200";
 
       case "em_entrega":
         return "bg-blue-100 text-blue-700 border-blue-200";
@@ -256,17 +253,10 @@ export default function PainelJM() {
     }
   }
 
-  // =========================
-  // STATUS - NOME
-  // =========================
-
   function statusNome(status: string) {
     switch (status) {
       case "novo":
         return "NOVO";
-
-      case "aceito":
-        return "ACEITO";
 
       case "em_entrega":
         return "EM ENTREGA";
@@ -283,7 +273,7 @@ export default function PainelJM() {
   }
 
   // =========================
-  // VERIFICANDO LOGIN
+  // LOGIN
   // =========================
 
   if (verificandoLogin) {
@@ -306,16 +296,10 @@ export default function PainelJM() {
     );
   }
 
-  // =========================
-  // PAINEL
-  // =========================
-
   return (
     <main className="min-h-screen bg-zinc-100">
 
-      {/* ========================= */}
       {/* CABEÇALHO */}
-      {/* ========================= */}
 
       <header className="border-b border-red-900/30 bg-red-700 text-white shadow-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
@@ -345,7 +329,7 @@ export default function PainelJM() {
           <button
             type="button"
             onClick={sair}
-            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/20 transition hover:bg-white/20 active:scale-[0.98]"
+            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-black text-white ring-1 ring-white/20 transition hover:bg-white/20"
           >
             Sair
           </button>
@@ -353,13 +337,9 @@ export default function PainelJM() {
         </div>
       </header>
 
-      {/* ========================= */}
       {/* CONTEÚDO */}
-      {/* ========================= */}
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-
-        {/* TÍTULO */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
@@ -373,7 +353,7 @@ export default function PainelJM() {
             </h2>
 
             <p className="mt-1 text-sm text-zinc-500">
-              Controle o andamento de cada pedido.
+              Controle as entregas da JM GÁS.
             </p>
           </div>
 
@@ -400,10 +380,6 @@ export default function PainelJM() {
 
             <p className="mt-4 font-black text-zinc-900">
               Carregando pedidos...
-            </p>
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Buscando informações no sistema.
             </p>
 
           </div>
@@ -450,7 +426,7 @@ export default function PainelJM() {
                     className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
                   >
 
-                    {/* TOPO DO PEDIDO */}
+                    {/* TOPO */}
 
                     <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
 
@@ -465,11 +441,9 @@ export default function PainelJM() {
                             {pedido.nome}
                           </h3>
 
-                          {pedido.whatsapp && (
-                            <p className="mt-2 text-sm font-semibold text-zinc-500">
-                              📱 {pedido.whatsapp}
-                            </p>
-                          )}
+                          <p className="mt-2 text-sm font-semibold text-zinc-500">
+                            📱 {pedido.whatsapp}
+                          </p>
                         </div>
 
                         <span
@@ -490,7 +464,7 @@ export default function PainelJM() {
 
                     <div className="p-5 sm:p-6">
 
-                      {/* CLIENTE / ENDEREÇO */}
+                      {/* CLIENTE E ENDEREÇO */}
 
                       <div className="grid gap-4 md:grid-cols-2">
 
@@ -545,7 +519,6 @@ export default function PainelJM() {
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-red-100">
-
                             <div className="flex items-center gap-3">
 
                               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-2xl">
@@ -563,11 +536,9 @@ export default function PainelJM() {
                               </div>
 
                             </div>
-
                           </div>
 
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100">
-
                             <div className="flex items-center gap-3">
 
                               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
@@ -585,7 +556,6 @@ export default function PainelJM() {
                               </div>
 
                             </div>
-
                           </div>
 
                         </div>
@@ -613,28 +583,10 @@ export default function PainelJM() {
                       <div className="mt-5 border-t border-zinc-100 pt-5">
 
                         <p className="mb-3 text-sm font-black text-zinc-900">
-                          Ações do pedido
+                          Ações
                         </p>
 
                         <div className="flex flex-wrap gap-3">
-
-                          {/* ACEITAR */}
-
-                          <button
-                            type="button"
-                            disabled={bloqueado}
-                            onClick={() =>
-                              alterarStatus(
-                                pedido.id,
-                                "aceito"
-                              )
-                            }
-                            className="rounded-2xl bg-red-600 px-5 py-3 font-black text-white transition hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            {atualizando === pedido.id
-                              ? "ATUALIZANDO..."
-                              : "✅ ACEITAR"}
-                          </button>
 
                           {/* EM ENTREGA */}
 
@@ -704,6 +656,7 @@ export default function PainelJM() {
                       </div>
 
                     </div>
+
                   </article>
                 );
               })}
