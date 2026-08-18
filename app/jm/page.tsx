@@ -7,8 +7,7 @@ import { supabase } from "@/lib/supabase";
 type StatusPedido =
   | "novo"
   | "em_entrega"
-  | "entregue"
-  | "cancelado";
+  | "entregue";
 
 type Pedido = {
   id: number;
@@ -34,7 +33,7 @@ export default function PainelJM() {
     useState(true);
 
   // =========================
-  // VERIFICAR LOGIN
+  // LOGIN
   // =========================
 
   useEffect(() => {
@@ -114,20 +113,8 @@ export default function PainelJM() {
 
   async function alterarStatus(
     id: number,
-    novoStatus:
-      | "em_entrega"
-      | "entregue"
-      | "cancelado"
+    novoStatus: StatusPedido
   ) {
-    const confirmar =
-      novoStatus === "cancelado"
-        ? window.confirm(
-            "Tem certeza que deseja cancelar este pedido?"
-          )
-        : true;
-
-    if (!confirmar) return;
-
     setAtualizando(id);
 
     const { error } = await supabase
@@ -166,12 +153,12 @@ export default function PainelJM() {
   }
 
   // =========================
-  // APAGAR DE VERDADE
+  // CANCELAR = APAGAR
   // =========================
 
-  async function apagarPedido(id: number) {
+  async function cancelarPedido(id: number) {
     const confirmar = window.confirm(
-      "APAGAR PEDIDO DEFINITIVAMENTE?\n\nEssa ação remove o pedido do Supabase e não pode ser desfeita."
+      "Cancelar este pedido?\n\nO pedido será apagado definitivamente do sistema."
     );
 
     if (!confirmar) return;
@@ -185,12 +172,12 @@ export default function PainelJM() {
 
     if (error) {
       console.error(
-        "Erro ao apagar pedido:",
+        "Erro ao cancelar pedido:",
         error
       );
 
       alert(
-        `Não foi possível apagar o pedido: ${error.message}`
+        `Não foi possível cancelar o pedido: ${error.message}`
       );
 
       setAtualizando(null);
@@ -212,7 +199,6 @@ export default function PainelJM() {
 
   async function sair() {
     await supabase.auth.signOut();
-
     router.replace("/login?next=/jm");
   }
 
@@ -245,9 +231,6 @@ export default function PainelJM() {
       case "entregue":
         return "bg-emerald-100 text-emerald-700 border-emerald-200";
 
-      case "cancelado":
-        return "bg-zinc-200 text-zinc-700 border-zinc-300";
-
       default:
         return "bg-zinc-100 text-zinc-700 border-zinc-200";
     }
@@ -264,9 +247,6 @@ export default function PainelJM() {
       case "entregue":
         return "ENTREGUE";
 
-      case "cancelado":
-        return "CANCELADO";
-
       default:
         return status.toUpperCase();
     }
@@ -280,8 +260,13 @@ export default function PainelJM() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-3xl">
-            🔐
+
+          <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
+            <img
+              src="/botijao.png"
+              alt="JM GÁS"
+              className="h-full w-full object-contain"
+            />
           </div>
 
           <h1 className="mt-5 text-xl font-black text-zinc-900">
@@ -291,6 +276,7 @@ export default function PainelJM() {
           <p className="mt-2 text-sm text-zinc-500">
             Verificando acesso...
           </p>
+
         </div>
       </main>
     );
@@ -299,15 +285,21 @@ export default function PainelJM() {
   return (
     <main className="min-h-screen bg-zinc-100">
 
+      {/* ========================= */}
       {/* CABEÇALHO */}
+      {/* ========================= */}
 
       <header className="border-b border-red-900/30 bg-red-700 text-white shadow-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
 
           <div className="flex items-center gap-3">
 
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl ring-1 ring-white/20">
-              📋
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm">
+              <img
+                src="/botijao.png"
+                alt="JM GÁS"
+                className="h-full w-full object-contain"
+              />
             </div>
 
             <div>
@@ -337,7 +329,9 @@ export default function PainelJM() {
         </div>
       </header>
 
+      {/* ========================= */}
       {/* CONTEÚDO */}
+      {/* ========================= */}
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
 
@@ -374,8 +368,12 @@ export default function PainelJM() {
         {carregando && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
-            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-red-50 text-3xl">
-              📦
+            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
+              <img
+                src="/botijao.png"
+                alt=""
+                className="h-full w-full object-contain"
+              />
             </div>
 
             <p className="mt-4 font-black text-zinc-900">
@@ -391,8 +389,12 @@ export default function PainelJM() {
           pedidos.length === 0 && (
             <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-zinc-200">
 
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50 text-4xl">
-                ✅
+              <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
+                <img
+                  src="/botijao.png"
+                  alt="JM GÁS"
+                  className="h-full w-full object-contain p-2"
+                />
               </div>
 
               <h3 className="mt-5 text-xl font-black text-zinc-900">
@@ -464,9 +466,9 @@ export default function PainelJM() {
 
                     <div className="p-5 sm:p-6">
 
-                      {/* CLIENTE E ENDEREÇO */}
-
                       <div className="grid gap-4 md:grid-cols-2">
+
+                        {/* CLIENTE */}
 
                         <section className="rounded-2xl border border-zinc-200 p-4">
 
@@ -477,7 +479,7 @@ export default function PainelJM() {
                           <div className="mt-3 space-y-2 text-sm">
 
                             <p className="font-bold text-zinc-900">
-                              👤 {pedido.nome}
+                              {pedido.nome}
                             </p>
 
                             <p className="text-zinc-600">
@@ -493,6 +495,8 @@ export default function PainelJM() {
                           </div>
 
                         </section>
+
+                        {/* ENDEREÇO */}
 
                         <section className="rounded-2xl border border-zinc-200 p-4">
 
@@ -519,10 +523,15 @@ export default function PainelJM() {
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-red-100">
+
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-2xl">
-                                🧯
+                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-red-50">
+                                <img
+                                  src="/botijao.png"
+                                  alt="Botijão"
+                                  className="h-full w-full object-contain"
+                                />
                               </div>
 
                               <div>
@@ -536,13 +545,19 @@ export default function PainelJM() {
                               </div>
 
                             </div>
+
                           </div>
 
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100">
+
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
-                                💧
+                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
+                                <img
+                                  src="/agua.png"
+                                  alt="Água"
+                                  className="h-full w-full object-contain"
+                                />
                               </div>
 
                               <div>
@@ -556,6 +571,7 @@ export default function PainelJM() {
                               </div>
 
                             </div>
+
                           </div>
 
                         </div>
@@ -620,43 +636,31 @@ export default function PainelJM() {
                             ✅ ENTREGUE
                           </button>
 
-                          {/* CANCELAR */}
+                          {/* CANCELAR = EXCLUIR */}
 
                           <button
                             type="button"
                             disabled={bloqueado}
                             onClick={() =>
-                              alterarStatus(
-                                pedido.id,
-                                "cancelado"
+                              cancelarPedido(
+                                pedido.id
                               )
                             }
-                            className="rounded-2xl bg-zinc-100 px-5 py-3 font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="rounded-2xl bg-red-100 px-5 py-3 font-black text-red-700 transition hover:bg-red-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             ❌ CANCELAR
                           </button>
 
-                          {/* APAGAR */}
-
-                          <button
-                            type="button"
-                            disabled={bloqueado}
-                            onClick={() =>
-                              apagarPedido(
-                                pedido.id
-                              )
-                            }
-                            className="rounded-2xl border border-red-200 bg-white px-5 py-3 font-black text-red-600 transition hover:bg-red-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            🗑️ APAGAR
-                          </button>
-
                         </div>
+
+                        <p className="mt-3 text-xs text-zinc-400">
+                          Cancelar remove o pedido
+                          definitivamente do sistema.
+                        </p>
 
                       </div>
 
                     </div>
-
                   </article>
                 );
               })}
@@ -666,7 +670,7 @@ export default function PainelJM() {
 
       </div>
 
-      <footer className="px-4 pb-6 pt-2 text-center">
+      <footer className="px-4 pb-8 pt-2 text-center">
         <p className="text-xs font-medium text-zinc-400">
           JM GÁS · Painel administrativo
         </p>
