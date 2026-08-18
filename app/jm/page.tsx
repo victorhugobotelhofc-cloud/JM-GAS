@@ -24,12 +24,8 @@ export default function PainelJM() {
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [atualizando, setAtualizando] =
-    useState<number | null>(null);
-  const [excluindo, setExcluindo] =
-    useState<number | null>(null);
-  const [verificandoLogin, setVerificandoLogin] =
-    useState(true);
+  const [atualizando, setAtualizando] = useState<number | null>(null);
+  const [verificandoLogin, setVerificandoLogin] = useState(true);
 
   // =========================
   // VERIFICAR LOGIN
@@ -99,8 +95,6 @@ export default function PainelJM() {
         return;
       }
 
-      console.log("PEDIDOS RECEBIDOS:", data);
-
       setPedidos((data || []) as Pedido[]);
       setCarregando(false);
     }
@@ -109,28 +103,12 @@ export default function PainelJM() {
   }, [verificandoLogin]);
 
   // =========================
-  // CONVERTER QUANTIDADE
+  // ALTERAR STATUS
   // =========================
 
-  function quantidadeProduto(
-    valor: number | string | null
-  ) {
-    const numero = Number(valor);
-
-    if (!Number.isFinite(numero)) {
-      return 0;
-    }
-
-    return numero;
-  }
-
-  // =========================
-  // MUDAR STATUS
-  // =========================
-
-  async function mudarStatus(
+  async function alterarStatus(
     id: number,
-    novoStatus: string
+    novoStatus: "aceito" | "cancelado"
   ) {
     setAtualizando(id);
 
@@ -143,16 +121,20 @@ export default function PainelJM() {
 
     if (error) {
       console.error(
-        "Erro ao atualizar pedido:",
+        "Erro ao alterar status:",
         error
+      );
+
+      alert(
+        `Erro ao alterar status: ${error.message}`
       );
 
       setAtualizando(null);
       return;
     }
 
-    setPedidos((pedidosAtuais) =>
-      pedidosAtuais.map((pedido) =>
+    setPedidos((atuais) =>
+      atuais.map((pedido) =>
         pedido.id === id
           ? {
               ...pedido,
@@ -166,12 +148,12 @@ export default function PainelJM() {
   }
 
   // =========================
-  // CANCELAR PEDIDO
+  // APAGAR DEFINITIVAMENTE
   // =========================
 
-  async function cancelarPedido(id: number) {
+  async function apagarPedido(id: number) {
     const confirmar = window.confirm(
-      "Tem certeza que deseja cancelar este pedido?"
+      "Tem certeza que deseja APAGAR este pedido definitivamente?\n\nEssa ação não pode ser desfeita."
     );
 
     if (!confirmar) return;
@@ -180,70 +162,30 @@ export default function PainelJM() {
 
     const { error } = await supabase
       .from("pedidos")
-      .update({
-        status: "cancelado",
-      })
+      .delete()
       .eq("id", id);
 
     if (error) {
       console.error(
-        "Erro ao cancelar pedido:",
+        "Erro ao apagar pedido:",
         error
+      );
+
+      alert(
+        `Não foi possível apagar o pedido: ${error.message}`
       );
 
       setAtualizando(null);
       return;
     }
 
-    setPedidos((pedidosAtuais) =>
-      pedidosAtuais.map((pedido) =>
-        pedido.id === id
-          ? {
-              ...pedido,
-              status: "cancelado",
-            }
-          : pedido
-      )
-    );
-
-    setAtualizando(null);
-  }
-
-  // =========================
-  // EXCLUIR PEDIDO
-  // =========================
-
-  async function excluirPedido(id: number) {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja EXCLUIR este pedido? Essa ação não pode ser desfeita."
-    );
-
-    if (!confirmar) return;
-
-    setExcluindo(id);
-
-    const { error } = await supabase
-      .from("pedidos")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      console.error(
-        "Erro ao excluir pedido:",
-        error
-      );
-
-      setExcluindo(null);
-      return;
-    }
-
-    setPedidos((pedidosAtuais) =>
-      pedidosAtuais.filter(
+    setPedidos((atuais) =>
+      atuais.filter(
         (pedido) => pedido.id !== id
       )
     );
 
-    setExcluindo(null);
+    setAtualizando(null);
   }
 
   // =========================
@@ -263,22 +205,22 @@ export default function PainelJM() {
   function statusCor(status: string) {
     switch (status) {
       case "novo":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-red-100 text-red-700 border-red-200";
 
       case "aceito":
-        return "bg-orange-100 text-orange-700";
-
-      case "em_entrega":
-        return "bg-blue-100 text-blue-700";
-
-      case "entregue":
-        return "bg-green-100 text-green-700";
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
 
       case "cancelado":
-        return "bg-red-100 text-red-700";
+        return "bg-zinc-200 text-zinc-700 border-zinc-300";
+
+      case "em_entrega":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+
+      case "entregue":
+        return "bg-green-100 text-green-700 border-green-200";
 
       default:
-        return "bg-zinc-100 text-zinc-700";
+        return "bg-zinc-100 text-zinc-700 border-zinc-200";
     }
   }
 
@@ -290,14 +232,14 @@ export default function PainelJM() {
       case "aceito":
         return "ACEITO";
 
+      case "cancelado":
+        return "CANCELADO";
+
       case "em_entrega":
         return "EM ENTREGA";
 
       case "entregue":
         return "ENTREGUE";
-
-      case "cancelado":
-        return "CANCELADO";
 
       default:
         return status.toUpperCase();
@@ -310,9 +252,11 @@ export default function PainelJM() {
 
   if (verificandoLogin) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-6">
-        <div className="rounded-3xl bg-white p-8 text-center shadow">
-          <div className="text-4xl">🔐</div>
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
+        <div className="rounded-3xl bg-white p-8 text-center shadow-2xl">
+          <div className="text-4xl">
+            🔐
+          </div>
 
           <p className="mt-3 font-black text-zinc-900">
             Verificando acesso...
@@ -327,18 +271,23 @@ export default function PainelJM() {
   // =========================
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-4 sm:p-6">
-      <div className="mx-auto max-w-5xl">
+    <main className="min-h-screen bg-zinc-100">
 
-        {/* CABEÇALHO */}
+      {/* CABEÇALHO */}
 
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <header className="border-b border-red-900/30 bg-red-700 text-white shadow-lg">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+
           <div>
-            <h1 className="text-3xl font-black text-zinc-900">
-              PAINEL JM
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-100">
+              JM GÁS
+            </p>
+
+            <h1 className="mt-1 text-3xl font-black">
+              PAINEL
             </h1>
 
-            <p className="mt-1 text-zinc-500">
+            <p className="mt-1 text-sm text-red-100">
               Gerenciamento de pedidos
             </p>
           </div>
@@ -346,17 +295,53 @@ export default function PainelJM() {
           <button
             type="button"
             onClick={sair}
-            className="w-fit rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold text-zinc-700 transition hover:bg-zinc-300"
+            className="rounded-xl bg-white/15 px-4 py-2 text-sm font-black text-white transition hover:bg-white/25"
           >
             Sair
           </button>
+
+        </div>
+      </header>
+
+      {/* CONTEÚDO */}
+
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+
+        <div className="mb-6 flex items-end justify-between">
+
+          <div>
+            <h2 className="text-2xl font-black text-zinc-900">
+              Pedidos
+            </h2>
+
+            <p className="mt-1 text-sm text-zinc-500">
+              {pedidos.length} pedido(s)
+            </p>
+          </div>
+
+          <div className="hidden rounded-2xl bg-red-50 px-4 py-3 text-right sm:block">
+            <p className="text-xs font-bold uppercase text-red-500">
+              Sistema
+            </p>
+
+            <p className="text-sm font-black text-red-700">
+              Online
+            </p>
+          </div>
+
         </div>
 
         {/* CARREGANDO */}
 
         {carregando && (
-          <div className="rounded-2xl bg-white p-6 shadow">
-            Carregando pedidos...
+          <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
+            <div className="text-4xl">
+              🔥
+            </div>
+
+            <p className="mt-3 font-black text-zinc-900">
+              Carregando pedidos...
+            </p>
           </div>
         )}
 
@@ -364,14 +349,20 @@ export default function PainelJM() {
 
         {!carregando &&
           pedidos.length === 0 && (
-            <div className="rounded-2xl bg-white p-8 text-center shadow">
-              <p className="font-bold text-zinc-900">
-                Nenhum pedido encontrado.
+            <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-zinc-200">
+
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-3xl">
+                📦
+              </div>
+
+              <p className="mt-4 text-xl font-black text-zinc-900">
+                Nenhum pedido encontrado
               </p>
 
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-2 text-sm text-zinc-500">
                 Os novos pedidos aparecerão aqui.
               </p>
+
             </div>
           )}
 
@@ -379,59 +370,37 @@ export default function PainelJM() {
 
         {!carregando &&
           pedidos.length > 0 && (
-            <div className="space-y-5">
+            <div className="grid gap-5">
 
               {pedidos.map((pedido) => {
-                const gasQuantidade =
-                  quantidadeProduto(
-                    pedido.gas
-                  );
+                const gas = Number(pedido.gas) || 0;
+                const agua = Number(pedido.agua) || 0;
 
-                const aguaQuantidade =
-                  quantidadeProduto(
-                    pedido.agua
-                  );
+                const bloqueado =
+                  atualizando === pedido.id;
 
                 return (
                   <div
                     key={pedido.id}
-                    className="rounded-3xl bg-white p-6 shadow"
+                    className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
                   >
 
-                    {/* CLIENTE */}
+                    {/* BARRA SUPERIOR */}
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-3 border-b border-zinc-100 bg-zinc-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
                       <div>
-                        <p className="text-xs font-bold text-zinc-400">
-                          PEDIDO #{pedido.id}
+                        <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                          Pedido #{pedido.id}
                         </p>
 
-                        <h2 className="mt-1 text-2xl font-black text-zinc-900">
+                        <h3 className="mt-1 text-2xl font-black text-zinc-900">
                           {pedido.nome}
-                        </h2>
-
-                        <div className="mt-2 space-y-1 text-sm text-zinc-500">
-                          <p>
-                            📱 {pedido.whatsapp}
-                          </p>
-
-                          {pedido.email && (
-                            <p>
-                              ✉️ {pedido.email}
-                            </p>
-                          )}
-
-                          <p>
-                            📍 {pedido.endereco}
-                          </p>
-                        </div>
+                        </h3>
                       </div>
 
-                      {/* STATUS */}
-
                       <span
-                        className={`w-fit rounded-full px-4 py-2 text-xs font-black ${statusCor(
+                        className={`w-fit rounded-full border px-3 py-1.5 text-xs font-black ${statusCor(
                           pedido.status
                         )}`}
                       >
@@ -439,196 +408,175 @@ export default function PainelJM() {
                           pedido.status
                         )}
                       </span>
+
                     </div>
 
-                    {/* PRODUTOS */}
+                    {/* CORPO */}
 
-                    <div className="mt-6 rounded-2xl bg-zinc-50 p-4">
+                    <div className="p-5">
 
-                      <p className="font-bold text-zinc-900">
-                        Produtos
-                      </p>
+                      {/* CLIENTE + ENTREGA */}
 
-                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-4 md:grid-cols-2">
 
-                        {/* GÁS */}
+                        <div className="rounded-2xl border border-zinc-200 p-4">
 
-                        <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
-                          <p className="text-sm font-bold text-zinc-500">
-                            🧯 Botijão de cozinha
+                          <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                            Cliente
                           </p>
 
-                          <p className="mt-1 text-2xl font-black text-zinc-900">
-                            {gasQuantidade}
-                          </p>
+                          <div className="mt-3 space-y-2 text-sm">
 
-                          <p className="text-xs text-zinc-400">
-                            unidade(s)
-                          </p>
+                            <p className="font-bold text-zinc-900">
+                              👤 {pedido.nome}
+                            </p>
+
+                            <p className="text-zinc-600">
+                              📱 {pedido.whatsapp}
+                            </p>
+
+                            {pedido.email && (
+                              <p className="text-zinc-600">
+                                ✉️ {pedido.email}
+                              </p>
+                            )}
+
+                          </div>
+
                         </div>
 
-                        {/* ÁGUA */}
+                        <div className="rounded-2xl border border-zinc-200 p-4">
 
-                        <div className="rounded-2xl bg-white p-4 ring-1 ring-zinc-200">
-                          <p className="text-sm font-bold text-zinc-500">
-                            💧 Água
+                          <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                            Entrega
                           </p>
 
-                          <p className="mt-1 text-2xl font-black text-zinc-900">
-                            {aguaQuantidade}
+                          <p className="mt-3 text-sm leading-6 text-zinc-700">
+                            📍 {pedido.endereco}
                           </p>
 
-                          <p className="text-xs text-zinc-400">
-                            unidade(s)
-                          </p>
                         </div>
 
                       </div>
 
-                    </div>
+                      {/* PRODUTOS */}
 
-                    {/* OBSERVAÇÃO */}
+                      <div className="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4">
 
-                    {pedido.observacao && (
-                      <div className="mt-4 rounded-2xl bg-zinc-100 p-4">
-                        <p className="text-xs font-black uppercase text-zinc-400">
-                          Observação
+                        <p className="text-xs font-black uppercase tracking-wider text-red-500">
+                          Produtos
                         </p>
 
-                        <p className="mt-1 text-sm text-zinc-700">
-                          {pedido.observacao}
-                        </p>
+                        <div className="mt-3 flex flex-wrap gap-3">
+
+                          <div className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-red-100">
+
+                            <p className="text-xs font-bold text-zinc-500">
+                              🧯 Botijão
+                            </p>
+
+                            <p className="mt-1 text-2xl font-black text-zinc-900">
+                              {gas}x
+                            </p>
+
+                          </div>
+
+                          <div className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-blue-100">
+
+                            <p className="text-xs font-bold text-zinc-500">
+                              💧 Água
+                            </p>
+
+                            <p className="mt-1 text-2xl font-black text-zinc-900">
+                              {agua}x
+                            </p>
+
+                          </div>
+
+                        </div>
+
                       </div>
-                    )}
 
-                    {/* AÇÕES */}
+                      {/* OBSERVAÇÃO */}
 
-                    <div className="mt-6 border-t border-zinc-100 pt-5">
+                      {pedido.observacao && (
+                        <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
 
-                      <p className="mb-3 text-sm font-bold text-zinc-900">
-                        Alterar status
-                      </p>
+                          <p className="text-xs font-black uppercase tracking-wider text-yellow-600">
+                            Observação
+                          </p>
 
-                      <div className="flex flex-wrap gap-2">
+                          <p className="mt-2 text-sm text-zinc-700">
+                            {pedido.observacao}
+                          </p>
 
-                        <button
-                          type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id
-                          }
-                          onClick={() =>
-                            mudarStatus(
-                              pedido.id,
-                              "novo"
-                            )
-                          }
-                          className="rounded-xl bg-yellow-100 px-4 py-2 text-sm font-bold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
-                        >
-                          Novo
-                        </button>
+                        </div>
+                      )}
+
+                      {/* AÇÕES */}
+
+                      <div className="mt-5 flex flex-wrap gap-3 border-t border-zinc-100 pt-5">
+
+                        {/* ACEITAR */}
 
                         <button
                           type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id
-                          }
+                          disabled={bloqueado}
                           onClick={() =>
-                            mudarStatus(
+                            alterarStatus(
                               pedido.id,
                               "aceito"
                             )
                           }
-                          className="rounded-xl bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
-                        >
-                          Aceito
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id
-                          }
-                          onClick={() =>
-                            mudarStatus(
-                              pedido.id,
-                              "em_entrega"
-                            )
-                          }
-                          className="rounded-xl bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
-                        >
-                          Em entrega
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id
-                          }
-                          onClick={() =>
-                            mudarStatus(
-                              pedido.id,
-                              "entregue"
-                            )
-                          }
-                          className="rounded-xl bg-green-100 px-4 py-2 text-sm font-bold text-green-700 hover:bg-green-200 disabled:opacity-50"
-                        >
-                          Entregue
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id ||
-                            pedido.status ===
-                              "cancelado"
-                          }
-                          onClick={() =>
-                            cancelarPedido(
-                              pedido.id
-                            )
-                          }
-                          className="rounded-xl bg-red-100 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+                          className="rounded-2xl bg-red-600 px-5 py-3 font-black text-white transition hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {atualizando ===
-                            pedido.id &&
-                          pedido.status !==
-                            "cancelado"
-                            ? "CANCELANDO..."
-                            : "Cancelar"}
+                          pedido.id
+                            ? "ATUALIZANDO..."
+                            : "✅ ACEITAR"}
                         </button>
+
+                        {/* CANCELAR */}
 
                         <button
                           type="button"
-                          disabled={
-                            atualizando === pedido.id ||
-                            excluindo === pedido.id
-                          }
+                          disabled={bloqueado}
                           onClick={() =>
-                            excluirPedido(
+                            alterarStatus(
+                              pedido.id,
+                              "cancelado"
+                            )
+                          }
+                          className="rounded-2xl bg-zinc-100 px-5 py-3 font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          ❌ CANCELAR
+                        </button>
+
+                        {/* APAGAR */}
+
+                        <button
+                          type="button"
+                          disabled={bloqueado}
+                          onClick={() =>
+                            apagarPedido(
                               pedido.id
                             )
                           }
-                          className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-bold text-white hover:bg-zinc-700 disabled:opacity-50"
+                          className="rounded-2xl border border-red-200 bg-white px-5 py-3 font-black text-red-600 transition hover:bg-red-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {excluindo === pedido.id
-                            ? "EXCLUINDO..."
-                            : "Excluir"}
+                          🗑️ APAGAR
                         </button>
 
                       </div>
-                    </div>
 
+                    </div>
                   </div>
                 );
               })}
 
             </div>
           )}
+
       </div>
     </main>
   );
