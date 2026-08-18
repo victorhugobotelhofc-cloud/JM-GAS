@@ -190,7 +190,21 @@ export default function EntregaJM() {
   }
 
   // =========================
-  // VERIFICANDO LOGIN
+  // QUANTIDADE
+  // =========================
+
+  function quantidade(
+    valor: number | string | null
+  ) {
+    const numero = Number(valor);
+
+    return Number.isFinite(numero)
+      ? numero
+      : 0;
+  }
+
+  // =========================
+  // LOGIN
   // =========================
 
   if (verificandoLogin) {
@@ -200,7 +214,7 @@ export default function EntregaJM() {
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
             <Image
-              src="/botijao.png"
+              src="/botijao.jpg"
               alt="JM GÁS"
               width={64}
               height={64}
@@ -221,10 +235,6 @@ export default function EntregaJM() {
     );
   }
 
-  // =========================
-  // ENTREGA JM
-  // =========================
-
   return (
     <main className="min-h-screen bg-zinc-100">
 
@@ -232,9 +242,9 @@ export default function EntregaJM() {
       {/* BARRA FIXA */}
       {/* ========================= */}
 
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-red-900/30 bg-red-700 text-white shadow-lg">
+      <header className="fixed inset-x-0 top-0 z-50 h-[132px] border-b border-red-900/30 bg-red-700 text-white shadow-lg">
 
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex h-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
 
           <div className="flex items-center gap-3">
 
@@ -243,7 +253,7 @@ export default function EntregaJM() {
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-white/30">
 
               <Image
-                src="/botijao.png"
+                src="/botijao.jpg"
                 alt="JM GÁS"
                 width={48}
                 height={48}
@@ -284,7 +294,7 @@ export default function EntregaJM() {
       {/* CONTEÚDO */}
       {/* ========================= */}
 
-      <div className="mx-auto max-w-4xl px-4 pb-8 pt-32 sm:px-6">
+      <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
 
         {/* RESUMO */}
 
@@ -322,15 +332,13 @@ export default function EntregaJM() {
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
             <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
-
               <Image
-                src="/botijao.png"
+                src="/botijao.jpg"
                 alt="JM GÁS"
                 width={64}
                 height={64}
                 className="h-full w-full object-contain"
               />
-
             </div>
 
             <p className="mt-4 font-black text-zinc-900">
@@ -351,15 +359,13 @@ export default function EntregaJM() {
             <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
               <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
-
                 <Image
-                  src="/botijao.png"
+                  src="/botijao.jpg"
                   alt="JM GÁS"
                   width={80}
                   height={80}
                   className="h-full w-full object-contain p-2"
                 />
-
               </div>
 
               <h3 className="mt-5 text-xl font-black text-zinc-900">
@@ -382,11 +388,8 @@ export default function EntregaJM() {
             <div className="space-y-5">
 
               {pedidos.map((pedido) => {
-                const gas =
-                  Number(pedido.gas) || 0;
-
-                const agua =
-                  Number(pedido.agua) || 0;
+                const gas = quantidade(pedido.gas);
+                const agua = quantidade(pedido.agua);
 
                 const bloqueado =
                   atualizando === pedido.id;
@@ -397,7 +400,7 @@ export default function EntregaJM() {
                     className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
                   >
 
-                    {/* CABEÇALHO DO PEDIDO */}
+                    {/* TOPO DO PEDIDO */}
 
                     <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
 
@@ -428,7 +431,6 @@ export default function EntregaJM() {
                         </div>
 
                         <div className="rounded-2xl bg-red-50 px-4 py-3 ring-1 ring-red-100">
-
                           <p className="text-[10px] font-black uppercase tracking-wider text-red-500">
                             Status
                           </p>
@@ -436,7 +438,6 @@ export default function EntregaJM() {
                           <p className="mt-1 text-sm font-black text-red-700">
                             EM ENTREGA
                           </p>
-
                         </div>
 
                       </div>
@@ -465,15 +466,13 @@ export default function EntregaJM() {
                           </div>
 
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-
                             <Image
-                              src="/botijao.png"
+                              src="/botijao.jpg"
                               alt=""
                               width={40}
                               height={40}
                               className="h-full w-full object-contain p-1"
                             />
-
                           </div>
 
                         </div>
@@ -520,15 +519,13 @@ export default function EntregaJM() {
                             <div className="flex items-center gap-3">
 
                               <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-
                                 <Image
-                                  src="/botijao.png"
+                                  src="/botijao.jpg"
                                   alt="Botijão"
                                   width={56}
                                   height={56}
                                   className="h-full w-full object-contain"
                                 />
-
                               </div>
 
                               <div>
@@ -552,15 +549,13 @@ export default function EntregaJM() {
                             <div className="flex items-center gap-3">
 
                               <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
-
                                 <Image
-                                  src="/agua.png"
+                                  src="/agua.jpg"
                                   alt="Água"
                                   width={56}
                                   height={56}
                                   className="h-full w-full object-contain"
                                 />
-
                               </div>
 
                               <div>
@@ -639,6 +634,7 @@ export default function EntregaJM() {
                       </div>
 
                     </div>
+
                   </article>
                 );
               })}
