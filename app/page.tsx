@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Configuracao = {
@@ -40,31 +40,36 @@ type DadosCliente = {
   estado: string;
 };
 
-const CHAVE_DADOS_CLIENTE = "jm-gas-dados-cliente";
+const CHAVE_DADOS_CLIENTE =
+  "jm-gas-dados-cliente";
+
+const CONFIG_PADRAO: Configuracao = {
+  nome_empresa: "JM GÁS",
+  texto_principal:
+    "Faça seu pedido de forma rápida e fácil.",
+  cor_principal: "#dc2626",
+  cor_fundo: "#f4f4f5",
+  cor_card: "#ffffff",
+
+  imagem_logo: "/botijao.jpg",
+  imagem_icone_gas: "/botijao.jpg",
+  imagem_icone_agua: "/agua.jpg",
+
+  estilo_cards: "arredondado",
+
+  cor_cabecalho: "#09090b",
+  cor_fonte_cabecalho: "#ffffff",
+  subtitulo_cabecalho:
+    "Gás e água na sua casa",
+  mostrar_pedidos_online: true,
+
+  tamanho_logo: 56,
+  tamanho_icone: 64,
+};
 
 export default function Home() {
-  const [config, setConfig] = useState<Configuracao>({
-    nome_empresa: "JM GÁS",
-    texto_principal:
-      "Faça seu pedido de forma rápida e fácil.",
-    cor_principal: "#dc2626",
-    cor_fundo: "#f4f4f5",
-    cor_card: "#ffffff",
-
-    imagem_logo: "/botijao.jpg",
-    imagem_icone_gas: "/botijao.jpg",
-    imagem_icone_agua: "/agua.jpg",
-
-    estilo_cards: "arredondado",
-
-    cor_cabecalho: "#09090b",
-    cor_fonte_cabecalho: "#ffffff",
-    subtitulo_cabecalho: "Gás e água na sua casa",
-    mostrar_pedidos_online: true,
-
-    tamanho_logo: 56,
-    tamanho_icone: 64,
-  });
+  const [config, setConfig] =
+    useState<Configuracao>(CONFIG_PADRAO);
 
   // =========================
   // CLIENTE
@@ -81,12 +86,14 @@ export default function Home() {
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
+  const [complemento, setComplemento] =
+    useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
 
-  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [buscandoCep, setBuscandoCep] =
+    useState(false);
 
   // =========================
   // PRODUTOS
@@ -99,9 +106,14 @@ export default function Home() {
   // PEDIDO
   // =========================
 
-  const [observacao, setObservacao] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [mensagem, setMensagem] = useState("");
+  const [observacao, setObservacao] =
+    useState("");
+
+  const [enviando, setEnviando] =
+    useState(false);
+
+  const [mensagem, setMensagem] =
+    useState("");
 
   // =========================
   // CARREGAR DADOS SALVOS
@@ -109,14 +121,14 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const dadosSalvos = localStorage.getItem(
+      const salvo = localStorage.getItem(
         CHAVE_DADOS_CLIENTE
       );
 
-      if (!dadosSalvos) return;
+      if (!salvo) return;
 
       const dados: Partial<DadosCliente> =
-        JSON.parse(dadosSalvos);
+        JSON.parse(salvo);
 
       setNome(dados.nome || "");
       setEmail(dados.email || "");
@@ -125,14 +137,20 @@ export default function Home() {
       setCep(dados.cep || "");
       setRua(dados.rua || "");
       setNumero(dados.numero || "");
-      setComplemento(dados.complemento || "");
+      setComplemento(
+        dados.complemento || ""
+      );
       setBairro(dados.bairro || "");
       setCidade(dados.cidade || "");
       setEstado(dados.estado || "");
     } catch (error) {
       console.error(
-        "Erro ao carregar dados salvos:",
+        "Erro ao carregar dados do cliente:",
         error
+      );
+
+      localStorage.removeItem(
+        CHAVE_DADOS_CLIENTE
       );
     }
   }, []);
@@ -142,7 +160,7 @@ export default function Home() {
   // =========================
 
   useEffect(() => {
-    const dadosCliente: DadosCliente = {
+    const dados: DadosCliente = {
       nome,
       email,
       whatsapp,
@@ -158,7 +176,7 @@ export default function Home() {
     try {
       localStorage.setItem(
         CHAVE_DADOS_CLIENTE,
-        JSON.stringify(dadosCliente)
+        JSON.stringify(dados)
       );
     } catch (error) {
       console.error(
@@ -180,7 +198,7 @@ export default function Home() {
   ]);
 
   // =========================
-  // CONFIGURAÇÃO
+  // CARREGAR CONFIGURAÇÃO
   // =========================
 
   useEffect(() => {
@@ -206,57 +224,67 @@ export default function Home() {
 
     setConfig({
       nome_empresa:
-        data.nome_empresa || "JM GÁS",
+        data.nome_empresa ||
+        CONFIG_PADRAO.nome_empresa,
 
       texto_principal:
         data.texto_principal ||
-        "Faça seu pedido de forma rápida e fácil.",
+        CONFIG_PADRAO.texto_principal,
 
       cor_principal:
-        data.cor_principal || "#dc2626",
+        data.cor_principal ||
+        CONFIG_PADRAO.cor_principal,
 
       cor_fundo:
-        data.cor_fundo || "#f4f4f5",
+        data.cor_fundo ||
+        CONFIG_PADRAO.cor_fundo,
 
       cor_card:
-        data.cor_card || "#ffffff",
+        data.cor_card ||
+        CONFIG_PADRAO.cor_card,
 
       imagem_logo:
         data.imagem_logo ||
         data.imagem_botijao ||
-        "/botijao.jpg",
+        CONFIG_PADRAO.imagem_logo,
 
       imagem_icone_gas:
         data.imagem_icone_gas ||
         data.imagem_botijao ||
-        "/botijao.jpg",
+        CONFIG_PADRAO.imagem_icone_gas,
 
       imagem_icone_agua:
         data.imagem_icone_agua ||
         data.imagem_agua ||
-        "/agua.jpg",
+        CONFIG_PADRAO.imagem_icone_agua,
 
       estilo_cards:
-        data.estilo_cards || "arredondado",
+        data.estilo_cards ||
+        CONFIG_PADRAO.estilo_cards,
 
       cor_cabecalho:
-        data.cor_cabecalho || "#09090b",
+        data.cor_cabecalho ||
+        CONFIG_PADRAO.cor_cabecalho,
 
       cor_fonte_cabecalho:
-        data.cor_fonte_cabecalho || "#ffffff",
+        data.cor_fonte_cabecalho ||
+        CONFIG_PADRAO.cor_fonte_cabecalho,
 
       subtitulo_cabecalho:
         data.subtitulo_cabecalho ||
-        "Gás e água na sua casa",
+        CONFIG_PADRAO.subtitulo_cabecalho,
 
       mostrar_pedidos_online:
-        data.mostrar_pedidos_online ?? true,
+        data.mostrar_pedidos_online ??
+        CONFIG_PADRAO.mostrar_pedidos_online,
 
       tamanho_logo:
-        data.tamanho_logo || 56,
+        data.tamanho_logo ||
+        CONFIG_PADRAO.tamanho_logo,
 
       tamanho_icone:
-        data.tamanho_icone || 64,
+        data.tamanho_icone ||
+        CONFIG_PADRAO.tamanho_icone,
     });
   }
 
@@ -269,21 +297,29 @@ export default function Home() {
       .replace(/\D/g, "")
       .slice(0, 8);
 
-    const cepFormatado =
-      cepLimpo.length > 5
-        ? `${cepLimpo.slice(0, 5)}-${cepLimpo.slice(5)}`
-        : cepLimpo;
+    let cepFormatado = cepLimpo;
+
+    if (cepLimpo.length > 5) {
+      cepFormatado =
+        cepLimpo.slice(0, 5) +
+        "-" +
+        cepLimpo.slice(5);
+    }
 
     setCep(cepFormatado);
 
-    if (cepLimpo.length !== 8) return;
+    if (cepLimpo.length !== 8) {
+      return;
+    }
 
     setBuscandoCep(true);
     setMensagem("");
 
     try {
       const resposta = await fetch(
-        `https://viacep.com.br/ws/${cepLimpo}/json/`
+        "https://viacep.com.br/ws/" +
+          cepLimpo +
+          "/json/"
       );
 
       if (!resposta.ok) {
@@ -295,7 +331,10 @@ export default function Home() {
       const dados = await resposta.json();
 
       if (dados.erro) {
-        setMensagem("CEP não encontrado.");
+        setMensagem(
+          "CEP não encontrado."
+        );
+
         return;
       }
 
@@ -303,6 +342,7 @@ export default function Home() {
       setBairro(dados.bairro || "");
       setCidade(dados.localidade || "");
       setEstado(dados.uf || "");
+
       setMensagem("");
     } catch (error) {
       console.error(
@@ -319,48 +359,22 @@ export default function Home() {
   }
 
   // =========================
-  // ESTILOS
+  // ESTILO DOS CARDS
   // =========================
 
   const radius =
     config.estilo_cards === "arredondado"
       ? "28px"
       : config.estilo_cards === "medio"
-      ? "18px"
-      : "8px";
-
-  // =========================
-  // RESUMO
-  // =========================
-
-  const totalItens = gas + agua;
-
-  const resumoProdutos = useMemo(() => {
-    const itens: string[] = [];
-
-    if (gas > 0) {
-      itens.push(
-        `${gas}x Botijão`
-      );
-    }
-
-    if (agua > 0) {
-      itens.push(
-        `${agua}x Água`
-      );
-    }
-
-    return itens.length
-      ? itens.join(" + ")
-      : "Nenhum produto selecionado";
-  }, [gas, agua]);
+      ? "16px"
+      : "6px";
 
   // =========================
   // FAZER PEDIDO
   // =========================
 
   async function fazerPedido(
-    e: React.FormEvent
+    e: React.FormEvent<HTMLFormElement>
   ) {
     e.preventDefault();
 
@@ -368,24 +382,22 @@ export default function Home() {
       setMensagem(
         "Escolha pelo menos um produto."
       );
-
       return;
     }
 
     if (
-      !nome ||
-      !whatsapp ||
-      !cep ||
-      !rua ||
-      !numero ||
-      !bairro ||
-      !cidade ||
-      !estado
+      !nome.trim() ||
+      !whatsapp.trim() ||
+      !cep.trim() ||
+      !rua.trim() ||
+      !numero.trim() ||
+      !bairro.trim() ||
+      !cidade.trim() ||
+      !estado.trim()
     ) {
       setMensagem(
         "Preencha todos os campos obrigatórios."
       );
-
       return;
     }
 
@@ -407,23 +419,27 @@ export default function Home() {
     const { error } = await supabase
       .from("pedidos")
       .insert({
-        nome,
+        nome: nome.trim(),
         email: email.trim(),
-        whatsapp,
+        whatsapp: whatsapp.trim(),
+
         endereco: enderecoCompleto,
 
-        cep,
-        rua,
-        numero,
-        complemento,
-        bairro,
-        cidade,
-        estado,
+        cep: cep.trim(),
+        rua: rua.trim(),
+        numero: numero.trim(),
+        complemento:
+          complemento.trim(),
+
+        bairro: bairro.trim(),
+        cidade: cidade.trim(),
+        estado: estado.trim(),
 
         gas,
         agua,
 
-        observacao,
+        observacao:
+          observacao.trim(),
 
         status: "novo",
       });
@@ -435,7 +451,8 @@ export default function Home() {
       );
 
       setMensagem(
-        `Erro ao enviar pedido: ${error.message}`
+        "Erro ao enviar pedido: " +
+          error.message
       );
 
       setEnviando(false);
@@ -462,10 +479,10 @@ export default function Home() {
     <main
       className="min-h-screen"
       style={{
-        backgroundColor: config.cor_fundo,
+        backgroundColor:
+          config.cor_fundo,
       }}
     >
-
       {/* ========================= */}
       {/* CABEÇALHO */}
       {/* ========================= */}
@@ -475,31 +492,16 @@ export default function Home() {
         style={{
           backgroundColor:
             config.cor_cabecalho,
-          color: config.cor_fonte_cabecalho,
         }}
       >
+        <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-red-600 opacity-20 blur-3xl" />
 
-        {/* detalhe visual */}
+        <div className="absolute -bottom-24 -left-20 h-52 w-52 rounded-full bg-red-600 opacity-10 blur-3xl" />
 
-        <div
-          className="absolute -right-20 -top-20 h-48 w-48 rounded-full opacity-20 blur-3xl"
-          style={{
-            backgroundColor:
-              config.cor_principal,
-          }}
-        />
-
-        <div
-          className="absolute -bottom-24 -left-20 h-52 w-52 rounded-full opacity-10 blur-3xl"
-          style={{
-            backgroundColor:
-              config.cor_principal,
-          }}
-        />
-
-        <div className="relative mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
-
+        <div className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6">
           <div className="flex items-center justify-between gap-4">
+
+            {/* LOGO + NOME */}
 
             <div className="flex items-center gap-4">
 
@@ -511,11 +513,13 @@ export default function Home() {
                       config.tamanho_logo,
                       56
                     ),
+
                   height:
                     Math.max(
                       config.tamanho_logo,
                       56
                     ),
+
                   borderRadius:
                     radius,
                 }}
@@ -525,7 +529,7 @@ export default function Home() {
                     config.imagem_logo ||
                     "/botijao.jpg"
                   }
-                  alt="Logo"
+                  alt="JM GÁS"
                   width={120}
                   height={120}
                   className="h-full w-full object-contain"
@@ -533,13 +537,12 @@ export default function Home() {
               </div>
 
               <div>
-
-                <p className="text-[10px] font-black uppercase tracking-[0.28em] opacity-60">
+                <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/50">
                   JM GÁS
                 </p>
 
                 <h1
-                  className="mt-0.5 text-2xl font-black tracking-tight sm:text-3xl"
+                  className="mt-1 text-2xl font-black sm:text-3xl"
                   style={{
                     color:
                       config.cor_fonte_cabecalho,
@@ -557,33 +560,27 @@ export default function Home() {
                 >
                   {config.subtitulo_cabecalho}
                 </p>
-
               </div>
 
             </div>
 
+            {/* STATUS */}
+
             {config.mostrar_pedidos_online && (
-              <div
-                className="hidden rounded-2xl border px-4 py-3 text-right sm:block"
-                style={{
-                  borderColor:
-                    config.cor_fonte_cabecalho,
-                  color:
-                    config.cor_fonte_cabecalho,
-                }}
-              >
-                <p className="text-[9px] font-black tracking-widest opacity-60">
+              <div className="hidden rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-right sm:block">
+
+                <p className="text-[9px] font-black uppercase tracking-widest text-white/50">
                   STATUS
                 </p>
 
-                <p className="mt-1 text-xs font-black">
+                <p className="mt-1 text-xs font-black text-white">
                   PEDIDOS ONLINE
                 </p>
+
               </div>
             )}
 
           </div>
-
         </div>
       </header>
 
@@ -591,17 +588,20 @@ export default function Home() {
       {/* CONTEÚDO */}
       {/* ========================= */}
 
-      <div className="mx-auto max-w-3xl px-4 py-7 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 
         {/* HERO */}
 
-        <section className="mb-7">
+        <div className="mb-7">
 
           <div
             className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black"
             style={{
-              backgroundColor: `${config.cor_principal}15`,
-              color: config.cor_principal,
+              backgroundColor:
+                config.cor_principal + "18",
+
+              color:
+                config.cor_principal,
             }}
           >
             <span
@@ -611,6 +611,7 @@ export default function Home() {
                   config.cor_principal,
               }}
             />
+
             PEDIDO RÁPIDO
           </div>
 
@@ -622,63 +623,44 @@ export default function Home() {
             {config.texto_principal}
           </p>
 
-        </section>
+        </div>
 
         <form
           onSubmit={fazerPedido}
           className="space-y-5"
         >
-
           {/* ========================= */}
           {/* PRODUTOS */}
           {/* ========================= */}
 
           <section
-            className="overflow-hidden bg-white shadow-sm ring-1 ring-zinc-200"
+            className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
+
               borderRadius: radius,
             }}
           >
-
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
-              <div className="flex items-end justify-between gap-4">
+              <p
+                className="text-xs font-black uppercase tracking-widest"
+                style={{
+                  color:
+                    config.cor_principal,
+                }}
+              >
+                01
+              </p>
 
-                <div>
-                  <p
-                    className="text-xs font-black uppercase tracking-widest"
-                    style={{
-                      color:
-                        config.cor_principal,
-                    }}
-                  >
-                    01
-                  </p>
+              <h3 className="mt-1 text-xl font-black text-zinc-950">
+                Escolha seus produtos
+              </h3>
 
-                  <h3 className="mt-1 text-xl font-black text-zinc-950">
-                    Escolha seus produtos
-                  </h3>
-
-                  <p className="mt-1 text-sm text-zinc-500">
-                    Selecione a quantidade.
-                  </p>
-                </div>
-
-                <div className="hidden rounded-xl bg-zinc-50 px-3 py-2 text-right sm:block">
-
-                  <p className="text-[9px] font-black uppercase tracking-wider text-zinc-400">
-                    Itens
-                  </p>
-
-                  <p className="text-lg font-black text-zinc-900">
-                    {totalItens}
-                  </p>
-
-                </div>
-
-              </div>
+              <p className="mt-1 text-sm text-zinc-500">
+                Selecione a quantidade.
+              </p>
 
             </div>
 
@@ -686,18 +668,13 @@ export default function Home() {
 
               {/* GÁS */}
 
-              <div
-                className="overflow-hidden border border-zinc-200 bg-white transition hover:border-red-200 hover:shadow-sm"
+              <div className="border border-zinc-200 p-4 transition hover:border-red-200 hover:shadow-sm"
                 style={{
                   borderRadius:
-                    Math.max(
-                      parseInt(radius),
-                      14
-                    ),
+                    radius,
                 }}
               >
-
-                <div className="flex items-center gap-4 p-4 sm:p-5">
+                <div className="flex items-center gap-4">
 
                   <div
                     className="flex shrink-0 items-center justify-center overflow-hidden bg-red-50"
@@ -707,14 +684,16 @@ export default function Home() {
                           config.tamanho_icone,
                           68
                         ),
+
                       height:
                         Math.max(
                           config.tamanho_icone,
                           68
                         ),
+
                       borderRadius:
                         Math.max(
-                          parseInt(radius) - 8,
+                          parseInt(radius),
                           12
                         ),
                     }}
@@ -741,23 +720,12 @@ export default function Home() {
                       Gás de cozinha
                     </p>
 
-                    <p
-                      className="mt-2 text-xs font-bold"
-                      style={{
-                        color:
-                          config.cor_principal,
-                      }}
-                    >
-                      Produto essencial
-                    </p>
-
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
 
                     <button
                       type="button"
-                      aria-label="Diminuir gás"
                       onClick={() =>
                         setGas(
                           Math.max(
@@ -766,22 +734,21 @@ export default function Home() {
                           )
                         )
                       }
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-95"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700 hover:bg-zinc-200"
                     >
                       −
                     </button>
 
-                    <span className="w-8 text-center text-lg font-black text-zinc-950">
+                    <span className="w-7 text-center text-lg font-black">
                       {gas}
                     </span>
 
                     <button
                       type="button"
-                      aria-label="Aumentar gás"
                       onClick={() =>
                         setGas(gas + 1)
                       }
-                      className="flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black text-white shadow-sm transition hover:brightness-95 active:scale-95"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black text-white"
                       style={{
                         backgroundColor:
                           config.cor_principal,
@@ -793,23 +760,18 @@ export default function Home() {
                   </div>
 
                 </div>
-
               </div>
 
               {/* ÁGUA */}
 
               <div
-                className="overflow-hidden border border-zinc-200 bg-white transition hover:border-blue-200 hover:shadow-sm"
+                className="border border-zinc-200 p-4 transition hover:border-blue-200 hover:shadow-sm"
                 style={{
                   borderRadius:
-                    Math.max(
-                      parseInt(radius),
-                      14
-                    ),
+                    radius,
                 }}
               >
-
-                <div className="flex items-center gap-4 p-4 sm:p-5">
+                <div className="flex items-center gap-4">
 
                   <div
                     className="flex shrink-0 items-center justify-center overflow-hidden bg-blue-50"
@@ -819,14 +781,16 @@ export default function Home() {
                           config.tamanho_icone,
                           68
                         ),
+
                       height:
                         Math.max(
                           config.tamanho_icone,
                           68
                         ),
+
                       borderRadius:
                         Math.max(
-                          parseInt(radius) - 8,
+                          parseInt(radius),
                           12
                         ),
                     }}
@@ -853,17 +817,12 @@ export default function Home() {
                       Água para sua casa
                     </p>
 
-                    <p className="mt-2 text-xs font-bold text-blue-600">
-                      Entrega rápida
-                    </p>
-
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
 
                     <button
                       type="button"
-                      aria-label="Diminuir água"
                       onClick={() =>
                         setAgua(
                           Math.max(
@@ -872,22 +831,21 @@ export default function Home() {
                           )
                         )
                       }
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700 transition hover:bg-zinc-200 active:scale-95"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100 text-xl font-black text-zinc-700 hover:bg-zinc-200"
                     >
                       −
                     </button>
 
-                    <span className="w-8 text-center text-lg font-black text-zinc-950">
+                    <span className="w-7 text-center text-lg font-black">
                       {agua}
                     </span>
 
                     <button
                       type="button"
-                      aria-label="Aumentar água"
                       onClick={() =>
                         setAgua(agua + 1)
                       }
-                      className="flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black text-white shadow-sm transition hover:brightness-95 active:scale-95"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl text-xl font-black text-white"
                       style={{
                         backgroundColor:
                           config.cor_principal,
@@ -899,58 +857,25 @@ export default function Home() {
                   </div>
 
                 </div>
-
-              </div>
-
-              {/* RESUMO */}
-
-              <div className="mt-4 rounded-2xl bg-zinc-950 px-4 py-4 text-white">
-
-                <div className="flex items-center justify-between gap-4">
-
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                      Seu pedido
-                    </p>
-
-                    <p className="mt-1 text-sm font-bold">
-                      {resumoProdutos}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-
-                    <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-                      Quantidade
-                    </p>
-
-                    <p className="mt-1 text-xl font-black">
-                      {totalItens}
-                    </p>
-
-                  </div>
-
-                </div>
-
               </div>
 
             </div>
-
           </section>
 
           {/* ========================= */}
-          {/* DADOS DO CLIENTE */}
+          {/* DADOS */}
           {/* ========================= */}
 
           <section
-            className="overflow-hidden bg-white shadow-sm ring-1 ring-zinc-200"
+            className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-              borderRadius: radius,
+
+              borderRadius:
+                radius,
             }}
           >
-
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -968,14 +893,12 @@ export default function Home() {
               </h3>
 
               <p className="mt-1 text-sm text-zinc-500">
-                Usaremos essas informações para a entrega.
+                Precisamos dessas informações para entregar seu pedido.
               </p>
 
             </div>
 
             <div className="space-y-4 p-5 sm:p-6">
-
-              {/* NOME */}
 
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
@@ -994,8 +917,6 @@ export default function Home() {
                 />
               </div>
 
-              {/* WHATSAPP */}
-
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
                   WhatsApp *
@@ -1012,8 +933,6 @@ export default function Home() {
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-red-500 focus:bg-white"
                 />
               </div>
-
-              {/* EMAIL */}
 
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
@@ -1036,7 +955,6 @@ export default function Home() {
               </div>
 
             </div>
-
           </section>
 
           {/* ========================= */}
@@ -1044,14 +962,15 @@ export default function Home() {
           {/* ========================= */}
 
           <section
-            className="overflow-hidden bg-white shadow-sm ring-1 ring-zinc-200"
+            className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-              borderRadius: radius,
+
+              borderRadius:
+                radius,
             }}
           >
-
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -1069,14 +988,12 @@ export default function Home() {
               </h3>
 
               <p className="mt-1 text-sm text-zinc-500">
-                Informe exatamente onde devemos entregar.
+                Informe onde devemos entregar seu pedido.
               </p>
 
             </div>
 
             <div className="space-y-4 p-5 sm:p-6">
-
-              {/* CEP */}
 
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
@@ -1103,8 +1020,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* RUA */}
-
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
                   Rua *
@@ -1121,8 +1036,6 @@ export default function Home() {
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-red-500 focus:bg-white"
                 />
               </div>
-
-              {/* NUMERO / COMPLEMENTO */}
 
               <div className="grid gap-4 sm:grid-cols-2">
 
@@ -1162,8 +1075,6 @@ export default function Home() {
 
               </div>
 
-              {/* BAIRRO */}
-
               <div>
                 <label className="mb-2 block text-sm font-black text-zinc-700">
                   Bairro *
@@ -1180,8 +1091,6 @@ export default function Home() {
                   className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-4 outline-none transition focus:border-red-500 focus:bg-white"
                 />
               </div>
-
-              {/* CIDADE / ESTADO */}
 
               <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
 
@@ -1225,7 +1134,6 @@ export default function Home() {
               </div>
 
             </div>
-
           </section>
 
           {/* ========================= */}
@@ -1233,14 +1141,15 @@ export default function Home() {
           {/* ========================= */}
 
           <section
-            className="overflow-hidden bg-white shadow-sm ring-1 ring-zinc-200"
+            className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-              borderRadius: radius,
+
+              borderRadius:
+                radius,
             }}
           >
-
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -1256,10 +1165,6 @@ export default function Home() {
               <h3 className="mt-1 text-xl font-black text-zinc-950">
                 Observação
               </h3>
-
-              <p className="mt-1 text-sm text-zinc-500">
-                Alguma informação importante para a entrega?
-              </p>
 
             </div>
 
@@ -1278,7 +1183,6 @@ export default function Home() {
               />
 
             </div>
-
           </section>
 
           {/* ========================= */}
@@ -1300,49 +1204,44 @@ export default function Home() {
           )}
 
           {/* ========================= */}
-          {/* FINALIZAR PEDIDO */}
+          {/* FINALIZAR */}
           {/* ========================= */}
 
           <section
-            className="overflow-hidden shadow-xl"
+            className="overflow-hidden shadow-xl ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-              borderRadius: radius,
+
+              borderRadius:
+                radius,
             }}
           >
-
             <div className="p-5 sm:p-6">
 
-              <div className="mb-4 flex items-center justify-between gap-4">
+              <div className="mb-5 flex items-center gap-4">
 
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-400">
-                    Resumo final
-                  </p>
-
-                  <p className="mt-1 text-base font-black text-zinc-950">
-                    {resumoProdutos}
-                  </p>
-                </div>
-
-                <div
-                  className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl"
-                  style={{
-                    backgroundColor:
-                      `${config.cor_principal}15`,
-                  }}
-                >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
                   <Image
                     src={
                       config.imagem_logo ||
                       "/botijao.jpg"
                     }
                     alt="JM GÁS"
-                    width={48}
-                    height={48}
-                    className="h-full w-full object-contain p-1"
+                    width={56}
+                    height={56}
+                    className="h-full w-full object-contain"
                   />
+                </div>
+
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                    Tudo pronto?
+                  </p>
+
+                  <p className="mt-1 text-base font-black text-zinc-950">
+                    Envie seu pedido para a JM GÁS.
+                  </p>
                 </div>
 
               </div>
@@ -1362,19 +1261,19 @@ export default function Home() {
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-zinc-400">
-                Seus dados são usados somente para processar
-                e entregar o pedido.
+                Seus dados são utilizados para processar e
+                realizar a entrega do pedido.
               </p>
 
             </div>
-
           </section>
 
         </form>
-
       </div>
 
+      {/* ========================= */}
       {/* RODAPÉ */}
+      {/* ========================= */}
 
       <footer className="border-t border-zinc-200 bg-white px-4 py-6 text-center">
 
@@ -1387,7 +1286,6 @@ export default function Home() {
         </p>
 
       </footer>
-
     </main>
   );
 }
