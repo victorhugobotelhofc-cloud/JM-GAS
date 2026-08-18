@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -185,7 +186,6 @@ export default function EntregaJM() {
 
   async function sair() {
     await supabase.auth.signOut();
-
     router.replace("/login?next=/point");
   }
 
@@ -198,8 +198,14 @@ export default function EntregaJM() {
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-3xl">
-            🔐
+          <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
+            <Image
+              src="/botijao.png"
+              alt="JM GÁS"
+              width={64}
+              height={64}
+              className="h-full w-full object-contain"
+            />
           </div>
 
           <h1 className="mt-5 text-xl font-black text-zinc-900">
@@ -226,14 +232,24 @@ export default function EntregaJM() {
       {/* BARRA FIXA */}
       {/* ========================= */}
 
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-red-800/30 bg-red-700 text-white shadow-lg">
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-red-900/30 bg-red-700 text-white shadow-lg">
 
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
 
           <div className="flex items-center gap-3">
 
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-sm ring-1 ring-white/20">
-              🛵
+            {/* LOGO */}
+
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-white/30">
+
+              <Image
+                src="/botijao.png"
+                alt="JM GÁS"
+                width={48}
+                height={48}
+                className="h-full w-full object-contain"
+              />
+
             </div>
 
             <div>
@@ -305,8 +321,16 @@ export default function EntregaJM() {
         {carregando && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
-            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-red-50 text-3xl">
-              🛵
+            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
+
+              <Image
+                src="/botijao.png"
+                alt="JM GÁS"
+                width={64}
+                height={64}
+                className="h-full w-full object-contain"
+              />
+
             </div>
 
             <p className="mt-4 font-black text-zinc-900">
@@ -326,8 +350,16 @@ export default function EntregaJM() {
           pedidos.length === 0 && (
             <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50 text-4xl">
-                ✅
+              <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
+
+                <Image
+                  src="/botijao.png"
+                  alt="JM GÁS"
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-contain p-2"
+                />
+
               </div>
 
               <h3 className="mt-5 text-xl font-black text-zinc-900">
@@ -388,7 +420,7 @@ export default function EntregaJM() {
                               )}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700"
+                              className="mt-2 inline-flex text-sm font-bold text-green-600 hover:text-green-700"
                             >
                               📱 {pedido.whatsapp}
                             </a>
@@ -432,8 +464,16 @@ export default function EntregaJM() {
                             </p>
                           </div>
 
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-lg">
-                            📍
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-red-50">
+
+                            <Image
+                              src="/botijao.png"
+                              alt=""
+                              width={40}
+                              height={40}
+                              className="h-full w-full object-contain p-1"
+                            />
+
                           </div>
 
                         </div>
@@ -473,12 +513,22 @@ export default function EntregaJM() {
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
+                          {/* GÁS */}
+
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-red-100">
 
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-2xl">
-                                🧯
+                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-red-50">
+
+                                <Image
+                                  src="/botijao.png"
+                                  alt="Botijão"
+                                  width={56}
+                                  height={56}
+                                  className="h-full w-full object-contain"
+                                />
+
                               </div>
 
                               <div>
@@ -495,12 +545,22 @@ export default function EntregaJM() {
 
                           </div>
 
+                          {/* ÁGUA */}
+
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100">
 
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-2xl">
-                                💧
+                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
+
+                                <Image
+                                  src="/agua.png"
+                                  alt="Água"
+                                  width={56}
+                                  height={56}
+                                  className="h-full w-full object-contain"
+                                />
+
                               </div>
 
                               <div>
@@ -587,8 +647,6 @@ export default function EntregaJM() {
           )}
 
       </div>
-
-      {/* RODAPÉ */}
 
       <footer className="px-4 pb-8 pt-2 text-center">
         <p className="text-xs font-medium text-zinc-400">
