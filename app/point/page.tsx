@@ -50,9 +50,7 @@ export default function EntregaJM() {
       if (cancelado) return;
 
       if (error || !user) {
-        router.replace(
-          "/login?next=/point"
-        );
+        router.replace("/login?next=/point");
         return;
       }
 
@@ -66,9 +64,7 @@ export default function EntregaJM() {
     } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
-          router.replace(
-            "/login?next=/point"
-          );
+          router.replace("/login?next=/point");
         }
       }
     );
@@ -190,9 +186,7 @@ export default function EntregaJM() {
   async function sair() {
     await supabase.auth.signOut();
 
-    router.replace(
-      "/login?next=/point"
-    );
+    router.replace("/login?next=/point");
   }
 
   // =========================
@@ -203,6 +197,7 @@ export default function EntregaJM() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-3xl">
             🔐
           </div>
@@ -214,6 +209,7 @@ export default function EntregaJM() {
           <p className="mt-2 text-sm text-zinc-500">
             Verificando acesso...
           </p>
+
         </div>
       </main>
     );
@@ -227,10 +223,10 @@ export default function EntregaJM() {
     <main className="min-h-screen bg-zinc-100">
 
       {/* ========================= */}
-      {/* CABEÇALHO */}
+      {/* BARRA FIXA */}
       {/* ========================= */}
 
-      <header className="sticky top-0 z-10 border-b border-red-800/30 bg-red-700 text-white shadow-lg">
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-red-800/30 bg-red-700 text-white shadow-lg">
 
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
 
@@ -241,7 +237,7 @@ export default function EntregaJM() {
             </div>
 
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-red-100">
+              <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-100">
                 JM GÁS
               </p>
 
@@ -272,14 +268,14 @@ export default function EntregaJM() {
       {/* CONTEÚDO */}
       {/* ========================= */}
 
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-4xl px-4 pb-8 pt-32 sm:px-6">
 
         {/* RESUMO */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
           <div>
-            <p className="text-sm font-bold uppercase tracking-wider text-red-600">
+            <p className="text-sm font-black uppercase tracking-wider text-red-600">
               Painel do entregador
             </p>
 
@@ -287,7 +283,7 @@ export default function EntregaJM() {
               Suas entregas
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 max-w-xl text-sm text-zinc-500">
               Confira o endereço, os produtos e abra a rota.
             </p>
           </div>
@@ -341,7 +337,7 @@ export default function EntregaJM() {
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
                 Não há nenhuma entrega em andamento no momento.
                 Quando um pedido for encaminhado para entrega,
-                ele aparecerá automaticamente aqui.
+                ele aparecerá aqui.
               </p>
 
             </div>
@@ -394,13 +390,13 @@ export default function EntregaJM() {
                               rel="noreferrer"
                               className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700"
                             >
-                              <span>📱</span>
-                              {pedido.whatsapp}
+                              📱 {pedido.whatsapp}
                             </a>
                           )}
                         </div>
 
                         <div className="rounded-2xl bg-red-50 px-4 py-3 ring-1 ring-red-100">
+
                           <p className="text-[10px] font-black uppercase tracking-wider text-red-500">
                             Status
                           </p>
@@ -408,6 +404,7 @@ export default function EntregaJM() {
                           <p className="mt-1 text-sm font-black text-red-700">
                             EM ENTREGA
                           </p>
+
                         </div>
 
                       </div>
@@ -593,7 +590,7 @@ export default function EntregaJM() {
 
       {/* RODAPÉ */}
 
-      <footer className="px-4 pb-6 pt-2 text-center">
+      <footer className="px-4 pb-8 pt-2 text-center">
         <p className="text-xs font-medium text-zinc-400">
           ENTREGA JM · Operação JM GÁS
         </p>
