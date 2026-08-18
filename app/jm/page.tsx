@@ -1,13 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-type StatusPedido =
-  | "novo"
-  | "em_entrega"
-  | "entregue";
 
 type Pedido = {
   id: number;
@@ -15,12 +11,18 @@ type Pedido = {
   whatsapp: string;
   email: string | null;
   endereco: string;
+
   gas: number | string | null;
   agua: number | string | null;
+
   observacao: string | null;
   status: string;
   criado_em: string;
 };
+
+type StatusPermitido =
+  | "em_entrega"
+  | "entregue";
 
 export default function PainelJM() {
   const router = useRouter();
@@ -113,7 +115,7 @@ export default function PainelJM() {
 
   async function alterarStatus(
     id: number,
-    novoStatus: StatusPedido
+    novoStatus: StatusPermitido
   ) {
     setAtualizando(id);
 
@@ -223,16 +225,16 @@ export default function PainelJM() {
   function statusCor(status: string) {
     switch (status) {
       case "novo":
-        return "bg-red-100 text-red-700 border-red-200";
+        return "border-red-200 bg-red-50 text-red-700";
 
       case "em_entrega":
-        return "bg-blue-100 text-blue-700 border-blue-200";
+        return "border-blue-200 bg-blue-50 text-blue-700";
 
       case "entregue":
-        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+        return "border-emerald-200 bg-emerald-50 text-emerald-700";
 
       default:
-        return "bg-zinc-100 text-zinc-700 border-zinc-200";
+        return "border-zinc-200 bg-zinc-50 text-zinc-700";
     }
   }
 
@@ -253,7 +255,7 @@ export default function PainelJM() {
   }
 
   // =========================
-  // LOGIN
+  // VERIFICANDO LOGIN
   // =========================
 
   if (verificandoLogin) {
@@ -262,9 +264,11 @@ export default function PainelJM() {
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
-            <img
-              src="/botijao.png"
+            <Image
+              src="/botijao.jpg"
               alt="JM GÁS"
+              width={64}
+              height={64}
               className="h-full w-full object-contain"
             />
           </div>
@@ -295,9 +299,11 @@ export default function PainelJM() {
           <div className="flex items-center gap-3">
 
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm">
-              <img
-                src="/botijao.png"
+              <Image
+                src="/botijao.jpg"
                 alt="JM GÁS"
+                width={48}
+                height={48}
                 className="h-full w-full object-contain"
               />
             </div>
@@ -368,10 +374,12 @@ export default function PainelJM() {
         {carregando && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
 
-            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
-              <img
-                src="/botijao.png"
-                alt=""
+            <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
+              <Image
+                src="/botijao.jpg"
+                alt="JM GÁS"
+                width={64}
+                height={64}
                 className="h-full w-full object-contain"
               />
             </div>
@@ -390,9 +398,11 @@ export default function PainelJM() {
             <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-zinc-200">
 
               <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
-                <img
-                  src="/botijao.png"
+                <Image
+                  src="/botijao.jpg"
                   alt="JM GÁS"
+                  width={80}
+                  height={80}
                   className="h-full w-full object-contain p-2"
                 />
               </div>
@@ -428,7 +438,7 @@ export default function PainelJM() {
                     className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
                   >
 
-                    {/* TOPO */}
+                    {/* CABEÇALHO DO PEDIDO */}
 
                     <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
 
@@ -466,9 +476,9 @@ export default function PainelJM() {
 
                     <div className="p-5 sm:p-6">
 
-                      <div className="grid gap-4 md:grid-cols-2">
+                      {/* CLIENTE / ENDEREÇO */}
 
-                        {/* CLIENTE */}
+                      <div className="grid gap-4 md:grid-cols-2">
 
                         <section className="rounded-2xl border border-zinc-200 p-4">
 
@@ -496,8 +506,6 @@ export default function PainelJM() {
 
                         </section>
 
-                        {/* ENDEREÇO */}
-
                         <section className="rounded-2xl border border-zinc-200 p-4">
 
                           <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
@@ -522,14 +530,18 @@ export default function PainelJM() {
 
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
 
+                          {/* GÁS */}
+
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-red-100">
 
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-                                <img
-                                  src="/botijao.png"
+                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-red-50">
+                                <Image
+                                  src="/botijao.jpg"
                                   alt="Botijão"
+                                  width={56}
+                                  height={56}
                                   className="h-full w-full object-contain"
                                 />
                               </div>
@@ -548,14 +560,18 @@ export default function PainelJM() {
 
                           </div>
 
+                          {/* ÁGUA */}
+
                           <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100">
 
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
-                                <img
-                                  src="/agua.png"
+                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
+                                <Image
+                                  src="/agua.jpg"
                                   alt="Água"
+                                  width={56}
+                                  height={56}
                                   className="h-full w-full object-contain"
                                 />
                               </div>
@@ -636,7 +652,7 @@ export default function PainelJM() {
                             ✅ ENTREGUE
                           </button>
 
-                          {/* CANCELAR = EXCLUIR */}
+                          {/* CANCELAR */}
 
                           <button
                             type="button"
