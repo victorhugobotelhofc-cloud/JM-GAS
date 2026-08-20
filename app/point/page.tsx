@@ -147,7 +147,11 @@ export default function EntregaJM() {
       pedido.cep,
       "Brasil",
     ].filter((parte) => {
-      return parte !== null && parte !== undefined && String(parte).trim() !== "";
+      return (
+        parte !== null &&
+        parte !== undefined &&
+        String(parte).trim() !== ""
+      );
     });
 
     return partes.join(", ");
@@ -160,21 +164,18 @@ export default function EntregaJM() {
   function abrirRota(pedido: Pedido) {
     const endereco = montarEndereco(pedido);
 
-    if (!endereco) {
+    if (!endereco || endereco.trim() === "") {
       alert("O endereço deste pedido está vazio.");
       return;
     }
 
-    const destino = encodeURIComponent(endereco);
+    const destino = encodeURIComponent(endereco.trim());
 
     const url =
       `https://www.google.com/maps/dir/?api=1` +
       `&destination=${destino}` +
       `&travelmode=driving`;
 
-    // Abre diretamente o Google Maps.
-    // No celular, se o aplicativo estiver instalado,
-    // o sistema pode encaminhar para ele.
     window.location.href = url;
   }
 
@@ -193,6 +194,7 @@ export default function EntregaJM() {
 
   function quantidade(valor: number | string | null) {
     const numero = Number(valor);
+
     return Number.isFinite(numero) ? numero : 0;
   }
 
@@ -228,7 +230,9 @@ export default function EntregaJM() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
+      {/* ========================= */}
       {/* BARRA FIXA */}
+      {/* ========================= */}
 
       <header className="fixed inset-x-0 top-0 z-50 h-[132px] border-b border-red-900/30 bg-red-700 text-white shadow-lg">
         <div className="mx-auto flex h-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -268,10 +272,12 @@ export default function EntregaJM() {
         </div>
       </header>
 
+      {/* ========================= */}
       {/* CONTEÚDO */}
+      {/* ========================= */}
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
-        {/* CABEÇALHO */}
+        {/* CABEÇALHO DA PÁGINA */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -429,17 +435,23 @@ export default function EntregaJM() {
                             WhatsApp
                           </p>
 
-                          <a
-                            href={
-                              "https://wa.me/" +
-                              pedido.whatsapp.replace(/\D/g, "")
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-1 inline-block text-base font-black text-green-600 hover:text-green-700"
-                          >
-                            {pedido.whatsapp}
-                          </a>
+                          {pedido.whatsapp ? (
+                            <a
+                              href={
+                                "https://wa.me/" +
+                                pedido.whatsapp.replace(/\D/g, "")
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-1 inline-block text-base font-black text-green-600 hover:text-green-700"
+                            >
+                              {pedido.whatsapp}
+                            </a>
+                          ) : (
+                            <p className="mt-1 text-base font-black text-zinc-900">
+                              Não informado
+                            </p>
+                          )}
                         </div>
                       </div>
                     </section>
@@ -631,6 +643,8 @@ export default function EntregaJM() {
           </div>
         )}
       </div>
+
+      {/* RODAPÉ */}
 
       <footer className="px-4 pb-8 pt-2 text-center">
         <p className="text-xs font-medium text-zinc-400">
