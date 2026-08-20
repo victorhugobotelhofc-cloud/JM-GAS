@@ -174,7 +174,7 @@ export default function EntregaJM() {
       `&destination=${destino}` +
       `&travelmode=driving`;
 
-    window.location.href = url;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   // =========================
