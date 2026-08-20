@@ -145,7 +145,10 @@ export default function EntregaJM() {
       pedido.cidade,
       pedido.estado,
       pedido.cep,
-    ].filter((parte) => Boolean(parte?.trim?.() || parte));
+      "Brasil",
+    ].filter((parte) => {
+      return parte !== null && parte !== undefined && String(parte).trim() !== "";
+    });
 
     return partes.join(", ");
   }
@@ -166,9 +169,13 @@ export default function EntregaJM() {
 
     const url =
       `https://www.google.com/maps/dir/?api=1` +
-      `&destination=${destino}`;
+      `&destination=${destino}` +
+      `&travelmode=driving`;
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    // Abre diretamente o Google Maps.
+    // No celular, se o aplicativo estiver instalado,
+    // o sistema pode encaminhar para ele.
+    window.location.href = url;
   }
 
   // =========================
@@ -221,9 +228,7 @@ export default function EntregaJM() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      {/* ========================= */}
       {/* BARRA FIXA */}
-      {/* ========================= */}
 
       <header className="fixed inset-x-0 top-0 z-50 h-[132px] border-b border-red-900/30 bg-red-700 text-white shadow-lg">
         <div className="mx-auto flex h-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -263,12 +268,10 @@ export default function EntregaJM() {
         </div>
       </header>
 
-      {/* ========================= */}
       {/* CONTEÚDO */}
-      {/* ========================= */}
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
-        {/* CABEÇALHO DA PÁGINA */}
+        {/* CABEÇALHO */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -351,8 +354,7 @@ export default function EntregaJM() {
             {pedidos.map((pedido) => {
               const gas = quantidade(pedido.gas);
               const agua = quantidade(pedido.agua);
-              const bloqueado =
-                atualizando === pedido.id;
+              const bloqueado = atualizando === pedido.id;
 
               return (
                 <article
@@ -376,10 +378,7 @@ export default function EntregaJM() {
                           <a
                             href={
                               "https://wa.me/" +
-                              pedido.whatsapp.replace(
-                                /\D/g,
-                                ""
-                              )
+                              pedido.whatsapp.replace(/\D/g, "")
                             }
                             target="_blank"
                             rel="noreferrer"
@@ -433,10 +432,7 @@ export default function EntregaJM() {
                           <a
                             href={
                               "https://wa.me/" +
-                              pedido.whatsapp.replace(
-                                /\D/g,
-                                ""
-                              )
+                              pedido.whatsapp.replace(/\D/g, "")
                             }
                             target="_blank"
                             rel="noreferrer"
@@ -465,8 +461,7 @@ export default function EntregaJM() {
                             </p>
 
                             <p className="mt-1 text-lg font-black text-zinc-950">
-                              {pedido.rua},{" "}
-                              {pedido.numero}
+                              {pedido.rua}, {pedido.numero}
                             </p>
                           </div>
 
@@ -611,9 +606,7 @@ export default function EntregaJM() {
                       <div className="grid gap-3 sm:grid-cols-2">
                         <button
                           type="button"
-                          onClick={() =>
-                            abrirRota(pedido)
-                          }
+                          onClick={() => abrirRota(pedido)}
                           className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
                         >
                           📍 ABRIR ROTA
@@ -622,11 +615,7 @@ export default function EntregaJM() {
                         <button
                           type="button"
                           disabled={bloqueado}
-                          onClick={() =>
-                            marcarEntregue(
-                              pedido.id
-                            )
-                          }
+                          onClick={() => marcarEntregue(pedido.id)}
                           className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {bloqueado
