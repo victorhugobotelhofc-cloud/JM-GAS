@@ -11,18 +11,14 @@ type Configuracao = {
   cor_principal: string;
   cor_fundo: string;
   cor_card: string;
-
   imagem_logo: string | null;
   imagem_icone_gas: string | null;
   imagem_icone_agua: string | null;
-
   estilo_cards: string;
-
   cor_cabecalho: string;
   cor_fonte_cabecalho: string;
   subtitulo_cabecalho: string;
   mostrar_pedidos_online: boolean;
-
   tamanho_logo: number;
   tamanho_icone: number;
 };
@@ -40,8 +36,7 @@ type DadosCliente = {
   estado: string;
 };
 
-const CHAVE_DADOS_CLIENTE =
-  "jm-gas-dados-cliente";
+const CHAVE_DADOS_CLIENTE = "jm-gas-dados-cliente";
 
 const CONFIG_PADRAO: Configuracao = {
   nome_empresa: "JM GÁS",
@@ -50,19 +45,14 @@ const CONFIG_PADRAO: Configuracao = {
   cor_principal: "#dc2626",
   cor_fundo: "#f4f4f5",
   cor_card: "#ffffff",
-
   imagem_logo: "/botijao.jpg",
   imagem_icone_gas: "/botijao.jpg",
   imagem_icone_agua: "/agua.jpg",
-
   estilo_cards: "arredondado",
-
   cor_cabecalho: "#09090b",
   cor_fonte_cabecalho: "#ffffff",
-  subtitulo_cabecalho:
-    "Gás e água na sua casa",
+  subtitulo_cabecalho: "Gás e água na sua casa",
   mostrar_pedidos_online: true,
-
   tamanho_logo: 56,
   tamanho_icone: 64,
 };
@@ -71,49 +61,26 @@ export default function Home() {
   const [config, setConfig] =
     useState<Configuracao>(CONFIG_PADRAO);
 
-  // =========================
-  // CLIENTE
-  // =========================
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
 
-  // =========================
-  // ENDEREÇO
-  // =========================
-
   const [cep, setCep] = useState("");
   const [rua, setRua] = useState("");
   const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] =
-    useState("");
+  const [complemento, setComplemento] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
 
-  const [buscandoCep, setBuscandoCep] =
-    useState(false);
-
-  // =========================
-  // PRODUTOS
-  // =========================
+  const [buscandoCep, setBuscandoCep] = useState(false);
 
   const [gas, setGas] = useState(0);
   const [agua, setAgua] = useState(0);
 
-  // =========================
-  // PEDIDO
-  // =========================
-
-  const [observacao, setObservacao] =
-    useState("");
-
-  const [enviando, setEnviando] =
-    useState(false);
-
-  const [mensagem, setMensagem] =
-    useState("");
+  const [observacao, setObservacao] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [mensagem, setMensagem] = useState("");
 
   // =========================
   // CARREGAR DADOS SALVOS
@@ -133,13 +100,10 @@ export default function Home() {
       setNome(dados.nome || "");
       setEmail(dados.email || "");
       setWhatsapp(dados.whatsapp || "");
-
       setCep(dados.cep || "");
       setRua(dados.rua || "");
       setNumero(dados.numero || "");
-      setComplemento(
-        dados.complemento || ""
-      );
+      setComplemento(dados.complemento || "");
       setBairro(dados.bairro || "");
       setCidade(dados.cidade || "");
       setEstado(dados.estado || "");
@@ -198,7 +162,7 @@ export default function Home() {
   ]);
 
   // =========================
-  // CARREGAR CONFIGURAÇÃO
+  // CONFIGURAÇÃO
   // =========================
 
   useEffect(() => {
@@ -334,7 +298,6 @@ export default function Home() {
         setMensagem(
           "CEP não encontrado."
         );
-
         return;
       }
 
@@ -342,7 +305,6 @@ export default function Home() {
       setBairro(dados.bairro || "");
       setCidade(dados.localidade || "");
       setEstado(dados.uf || "");
-
       setMensagem("");
     } catch (error) {
       console.error(
@@ -359,7 +321,7 @@ export default function Home() {
   }
 
   // =========================
-  // ESTILO DOS CARDS
+  // ESTILO
   // =========================
 
   const radius =
@@ -422,14 +384,12 @@ export default function Home() {
         nome: nome.trim(),
         email: email.trim(),
         whatsapp: whatsapp.trim(),
-
         endereco: enderecoCompleto,
 
         cep: cep.trim(),
         rua: rua.trim(),
         numero: numero.trim(),
-        complemento:
-          complemento.trim(),
+        complemento: complemento.trim(),
 
         bairro: bairro.trim(),
         cidade: cidade.trim(),
@@ -438,8 +398,7 @@ export default function Home() {
         gas,
         agua,
 
-        observacao:
-          observacao.trim(),
+        observacao: observacao.trim(),
 
         status: "novo",
       });
@@ -479,8 +438,7 @@ export default function Home() {
     <main
       className="min-h-screen"
       style={{
-        backgroundColor:
-          config.cor_fundo,
+        backgroundColor: config.cor_fundo,
       }}
     >
       {/* ========================= */}
@@ -501,27 +459,20 @@ export default function Home() {
         <div className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6">
           <div className="flex items-center justify-between gap-4">
 
-            {/* LOGO + NOME */}
-
             <div className="flex items-center gap-4">
 
               <div
                 className="flex shrink-0 items-center justify-center overflow-hidden bg-white shadow-lg"
                 style={{
-                  width:
-                    Math.max(
-                      config.tamanho_logo,
-                      56
-                    ),
-
-                  height:
-                    Math.max(
-                      config.tamanho_logo,
-                      56
-                    ),
-
-                  borderRadius:
-                    radius,
+                  width: Math.max(
+                    config.tamanho_logo,
+                    56
+                  ),
+                  height: Math.max(
+                    config.tamanho_logo,
+                    56
+                  ),
+                  borderRadius: radius,
                 }}
               >
                 <Image
@@ -564,11 +515,8 @@ export default function Home() {
 
             </div>
 
-            {/* STATUS */}
-
             {config.mostrar_pedidos_online && (
               <div className="hidden rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-right sm:block">
-
                 <p className="text-[9px] font-black uppercase tracking-widest text-white/50">
                   STATUS
                 </p>
@@ -576,7 +524,6 @@ export default function Home() {
                 <p className="mt-1 text-xs font-black text-white">
                   PEDIDOS ONLINE
                 </p>
-
               </div>
             )}
 
@@ -590,16 +537,12 @@ export default function Home() {
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 
-        {/* HERO */}
-
         <div className="mb-7">
-
           <div
             className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black"
             style={{
               backgroundColor:
                 config.cor_principal + "18",
-
               color:
                 config.cor_principal,
             }}
@@ -611,7 +554,6 @@ export default function Home() {
                   config.cor_principal,
               }}
             />
-
             PEDIDO RÁPIDO
           </div>
 
@@ -622,23 +564,20 @@ export default function Home() {
           <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-500">
             {config.texto_principal}
           </p>
-
         </div>
 
         <form
           onSubmit={fazerPedido}
           className="space-y-5"
         >
-          {/* ========================= */}
+
           {/* PRODUTOS */}
-          {/* ========================= */}
 
           <section
             className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-
               borderRadius: radius,
             }}
           >
@@ -668,10 +607,10 @@ export default function Home() {
 
               {/* GÁS */}
 
-              <div className="border border-zinc-200 p-4 transition hover:border-red-200 hover:shadow-sm"
+              <div
+                className="border border-zinc-200 p-4 transition hover:border-red-200 hover:shadow-sm"
                 style={{
-                  borderRadius:
-                    radius,
+                  borderRadius: radius,
                 }}
               >
                 <div className="flex items-center gap-4">
@@ -679,18 +618,14 @@ export default function Home() {
                   <div
                     className="flex shrink-0 items-center justify-center overflow-hidden bg-red-50"
                     style={{
-                      width:
-                        Math.max(
-                          config.tamanho_icone,
-                          68
-                        ),
-
-                      height:
-                        Math.max(
-                          config.tamanho_icone,
-                          68
-                        ),
-
+                      width: Math.max(
+                        config.tamanho_icone,
+                        68
+                      ),
+                      height: Math.max(
+                        config.tamanho_icone,
+                        68
+                      ),
                       borderRadius:
                         Math.max(
                           parseInt(radius),
@@ -767,8 +702,7 @@ export default function Home() {
               <div
                 className="border border-zinc-200 p-4 transition hover:border-blue-200 hover:shadow-sm"
                 style={{
-                  borderRadius:
-                    radius,
+                  borderRadius: radius,
                 }}
               >
                 <div className="flex items-center gap-4">
@@ -776,18 +710,14 @@ export default function Home() {
                   <div
                     className="flex shrink-0 items-center justify-center overflow-hidden bg-blue-50"
                     style={{
-                      width:
-                        Math.max(
-                          config.tamanho_icone,
-                          68
-                        ),
-
-                      height:
-                        Math.max(
-                          config.tamanho_icone,
-                          68
-                        ),
-
+                      width: Math.max(
+                        config.tamanho_icone,
+                        68
+                      ),
+                      height: Math.max(
+                        config.tamanho_icone,
+                        68
+                      ),
                       borderRadius:
                         Math.max(
                           parseInt(radius),
@@ -862,18 +792,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* DADOS */}
-          {/* ========================= */}
 
           <section
             className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-
-              borderRadius:
-                radius,
+              borderRadius: radius,
             }}
           >
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
@@ -957,18 +883,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* ENDEREÇO */}
-          {/* ========================= */}
 
           <section
             className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-
-              borderRadius:
-                radius,
+              borderRadius: radius,
             }}
           >
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
@@ -1136,18 +1058,14 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* OBSERVAÇÃO */}
-          {/* ========================= */}
 
           <section
             className="overflow-hidden shadow-sm ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-
-              borderRadius:
-                radius,
+              borderRadius: radius,
             }}
           >
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
@@ -1185,36 +1103,22 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ========================= */}
           {/* MENSAGEM */}
-          {/* ========================= */}
 
           {mensagem && (
-            <div
-              className={`rounded-2xl p-4 text-center text-sm font-black ${
-                mensagem.startsWith(
-                  "Pedido recebido"
-                )
-                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                  : "bg-red-50 text-red-700 ring-1 ring-red-200"
-              }`}
-            >
+            <div className="rounded-2xl bg-zinc-900 p-4 text-center text-sm font-black text-white">
               {mensagem}
             </div>
           )}
 
-          {/* ========================= */}
           {/* FINALIZAR */}
-          {/* ========================= */}
 
           <section
             className="overflow-hidden shadow-xl ring-1 ring-zinc-200"
             style={{
               backgroundColor:
                 config.cor_card,
-
-              borderRadius:
-                radius,
+              borderRadius: radius,
             }}
           >
             <div className="p-5 sm:p-6">
@@ -1261,8 +1165,7 @@ export default function Home() {
               </button>
 
               <p className="mt-4 text-center text-xs leading-5 text-zinc-400">
-                Seus dados são utilizados para processar e
-                realizar a entrega do pedido.
+                Seus dados são utilizados para processar e realizar a entrega do pedido.
               </p>
 
             </div>
@@ -1271,12 +1174,9 @@ export default function Home() {
         </form>
       </div>
 
-      {/* ========================= */}
       {/* RODAPÉ */}
-      {/* ========================= */}
 
       <footer className="border-t border-zinc-200 bg-white px-4 py-6 text-center">
-
         <p className="text-sm font-black text-zinc-700">
           {config.nome_empresa}
         </p>
@@ -1284,7 +1184,6 @@ export default function Home() {
         <p className="mt-1 text-xs text-zinc-400">
           Gás e água na sua casa
         </p>
-
       </footer>
     </main>
   );
