@@ -39,19 +39,22 @@ const CHAVE_DADOS_CLIENTE = "jm-gas-dados-cliente";
 
 const CONFIG_PADRAO: Configuracao = {
   nome_empresa: "JM GÁS",
-  texto_principal:
-    "Faça seu pedido de forma rápida e fácil.",
+  texto_principal: "Faça seu pedido de forma rápida e fácil.",
   cor_principal: "#dc2626",
   cor_fundo: "#f4f4f5",
   cor_card: "#ffffff",
+
   imagem_logo: "/botijao.jpg",
   imagem_icone_gas: "/botijao.jpg",
   imagem_icone_agua: "/agua.jpg",
+
   estilo_cards: "arredondado",
+
   cor_cabecalho: "#09090b",
   cor_fonte_cabecalho: "#ffffff",
   subtitulo_cabecalho: "Gás e água na sua casa",
   mostrar_pedidos_online: true,
+
   tamanho_logo: 56,
   tamanho_icone: 64,
 };
@@ -99,6 +102,7 @@ export default function Home() {
       setNome(dados.nome || "");
       setEmail(dados.email || "");
       setWhatsapp(dados.whatsapp || "");
+
       setCep(dados.cep || "");
       setRua(dados.rua || "");
       setNumero(dados.numero || "");
@@ -119,7 +123,7 @@ export default function Home() {
   }, []);
 
   // =========================
-  // SALVAR DADOS AUTOMÁTICOS
+  // SALVAR DADOS AUTOMATICAMENTE
   // =========================
 
   useEffect(() => {
@@ -161,7 +165,7 @@ export default function Home() {
   ]);
 
   // =========================
-  // CONFIGURAÇÃO
+  // CARREGAR CONFIGURAÇÃO
   // =========================
 
   useEffect(() => {
@@ -294,9 +298,7 @@ export default function Home() {
       const dados = await resposta.json();
 
       if (dados.erro) {
-        setMensagem(
-          "CEP não encontrado."
-        );
+        setMensagem("CEP não encontrado.");
         return;
       }
 
@@ -418,7 +420,7 @@ export default function Home() {
     }
 
     setMensagem(
-      "Pedido recebido com sucesso! 🔥"
+      "Pedido recebido com sucesso!"
     );
 
     setGas(0);
@@ -440,9 +442,7 @@ export default function Home() {
         backgroundColor: config.cor_fundo,
       }}
     >
-      {/* ========================= */}
       {/* CABEÇALHO */}
-      {/* ========================= */}
 
       <header
         className="relative overflow-hidden shadow-xl"
@@ -530,13 +530,12 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ========================= */}
       {/* CONTEÚDO */}
-      {/* ========================= */}
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
 
         <div className="mb-7">
+
           <div
             className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black"
             style={{
@@ -563,6 +562,7 @@ export default function Home() {
           <p className="mt-3 max-w-2xl text-base leading-7 text-zinc-500">
             {config.texto_principal}
           </p>
+
         </div>
 
         <form
@@ -580,6 +580,7 @@ export default function Home() {
               borderRadius: radius,
             }}
           >
+
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -801,6 +802,7 @@ export default function Home() {
               borderRadius: radius,
             }}
           >
+
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -892,6 +894,7 @@ export default function Home() {
               borderRadius: radius,
             }}
           >
+
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -1067,6 +1070,7 @@ export default function Home() {
               borderRadius: radius,
             }}
           >
+
             <div className="border-b border-zinc-100 px-5 py-5 sm:px-6">
 
               <p
@@ -1120,6 +1124,7 @@ export default function Home() {
               borderRadius: radius,
             }}
           >
+
             <div className="p-5 sm:p-6">
 
               <div className="mb-5 flex items-center gap-4">
@@ -1187,4 +1192,3 @@ export default function Home() {
     </main>
   );
 }
-```
