@@ -173,9 +173,7 @@ export default function EntregaJM() {
 
     /*
      * A janela é aberta imediatamente pelo clique.
-     *
-     * Isso evita que Chrome/Edge/Firefox bloqueiem
-     * a nova aba enquanto esperamos o GPS.
+     * Isso evita bloqueio de popup enquanto esperamos o GPS.
      */
     const novaAba = window.open(
       "",
@@ -194,12 +192,18 @@ export default function EntregaJM() {
     }
 
     /*
+     * Depois dessa verificação, "aba" é garantidamente
+     * uma janela válida para o TypeScript.
+     */
+    const aba = novaAba;
+
+    /*
      * Tela temporária enquanto o GPS é obtido.
      */
     try {
-      novaAba.document.title = "JM GÁS - Abrindo rota";
+      aba.document.title = "JM GÁS - Abrindo rota";
 
-      novaAba.document.body.innerHTML = `
+      aba.document.body.innerHTML = `
         <div style="
           font-family: Arial, sans-serif;
           display: flex;
@@ -251,12 +255,7 @@ export default function EntregaJM() {
     // =========================
 
     function abrirMaps(url: string) {
-      try {
-        novaAba.location.href = url;
-      } catch {
-        window.location.href = url;
-      }
-
+      aba.location.href = url;
       setAbrindoRota(null);
     }
 
@@ -284,7 +283,7 @@ export default function EntregaJM() {
         const longitude = posicao.coords.longitude;
 
         /*
-         * A localização REAL do aparelho vira
+         * A localização real do aparelho vira
          * a origem da rota.
          */
         const origem = `${latitude},${longitude}`;
@@ -305,13 +304,8 @@ export default function EntregaJM() {
         );
 
         /*
-         * FALLBACK
-         *
-         * Se o GPS não puder ser obtido, abrimos
-         * o Google Maps somente com o destino.
-         *
-         * Assim o próprio Google Maps pode tentar
-         * determinar a localização atual.
+         * FALLBACK:
+         * abre o Google Maps somente com o destino.
          */
         const url =
           `https://www.google.com/maps/dir/?api=1` +
