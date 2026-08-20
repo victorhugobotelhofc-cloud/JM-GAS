@@ -1,3 +1,4 @@
+```tsx
 "use client";
 
 import Image from "next/image";
@@ -9,7 +10,6 @@ type Pedido = {
   id: number;
   nome: string;
   whatsapp: string;
-
   cep: string;
   rua: string;
   numero: string;
@@ -17,10 +17,8 @@ type Pedido = {
   bairro: string;
   cidade: string;
   estado: string;
-
   gas: number | string | null;
   agua: number | string | null;
-
   observacao: string | null;
   status: string;
 };
@@ -30,13 +28,11 @@ export default function EntregaJM() {
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [atualizando, setAtualizando] =
-    useState<number | null>(null);
-  const [verificandoLogin, setVerificandoLogin] =
-    useState(true);
+  const [atualizando, setAtualizando] = useState<number | null>(null);
+  const [verificandoLogin, setVerificandoLogin] = useState(true);
 
   // =========================
-  // VERIFICAR LOGIN
+  // LOGIN
   // =========================
 
   useEffect(() => {
@@ -62,13 +58,11 @@ export default function EntregaJM() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!session) {
-          router.replace("/login?next=/point");
-        }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.replace("/login?next=/point");
       }
-    );
+    });
 
     return () => {
       cancelado = true;
@@ -95,16 +89,12 @@ export default function EntregaJM() {
         });
 
       if (error) {
-        console.error(
-          "Erro ao carregar pedidos:",
-          error
-        );
-
+        console.error("Erro ao carregar pedidos:", error);
         setCarregando(false);
         return;
       }
 
-      setPedidos((data || []) as Pedido[]);
+      setPedidos((data ?? []) as Pedido[]);
       setCarregando(false);
     }
 
@@ -112,7 +102,7 @@ export default function EntregaJM() {
   }, [verificandoLogin]);
 
   // =========================
-  // MARCAR COMO ENTREGUE
+  // ENTREGAR PEDIDO
   // =========================
 
   async function marcarEntregue(id: number) {
@@ -126,10 +116,7 @@ export default function EntregaJM() {
       .eq("id", id);
 
     if (error) {
-      console.error(
-        "Erro ao atualizar pedido:",
-        error
-      );
+      console.error("Erro ao atualizar pedido:", error);
 
       alert(
         `Não foi possível atualizar o pedido: ${error.message}`
@@ -140,9 +127,7 @@ export default function EntregaJM() {
     }
 
     setPedidos((atuais) =>
-      atuais.filter(
-        (pedido) => pedido.id !== id
-      )
+      atuais.filter((pedido) => pedido.id !== id)
     );
 
     setAtualizando(null);
@@ -153,7 +138,7 @@ export default function EntregaJM() {
   // =========================
 
   function montarEndereco(pedido: Pedido) {
-    return [
+    const partes = [
       pedido.rua,
       pedido.numero,
       pedido.complemento,
@@ -161,9 +146,9 @@ export default function EntregaJM() {
       pedido.cidade,
       pedido.estado,
       pedido.cep,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    ].filter((parte) => Boolean(parte?.trim?.() || parte));
+
+    return partes.join(", ");
   }
 
   // =========================
@@ -172,12 +157,19 @@ export default function EntregaJM() {
 
   function abrirRota(pedido: Pedido) {
     const endereco = montarEndereco(pedido);
+
+    if (!endereco) {
+      alert("O endereço deste pedido está vazio.");
+      return;
+    }
+
     const destino = encodeURIComponent(endereco);
 
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${destino}`,
-      "_blank"
-    );
+    const url =
+      `https://www.google.com/maps/dir/?api=1` +
+      `&destination=${destino}`;
+
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   // =========================
@@ -193,25 +185,19 @@ export default function EntregaJM() {
   // QUANTIDADE
   // =========================
 
-  function quantidade(
-    valor: number | string | null
-  ) {
+  function quantidade(valor: number | string | null) {
     const numero = Number(valor);
-
-    return Number.isFinite(numero)
-      ? numero
-      : 0;
+    return Number.isFinite(numero) ? numero : 0;
   }
 
   // =========================
-  // LOGIN
+  // TELA DE LOGIN
   // =========================
 
   if (verificandoLogin) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
-
           <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
             <Image
               src="/botijao.jpg"
@@ -229,7 +215,6 @@ export default function EntregaJM() {
           <p className="mt-2 text-sm text-zinc-500">
             Verificando acesso...
           </p>
-
         </div>
       </main>
     );
@@ -237,21 +222,14 @@ export default function EntregaJM() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-
       {/* ========================= */}
       {/* BARRA FIXA */}
       {/* ========================= */}
 
       <header className="fixed inset-x-0 top-0 z-50 h-[132px] border-b border-red-900/30 bg-red-700 text-white shadow-lg">
-
         <div className="mx-auto flex h-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
-
           <div className="flex items-center gap-3">
-
-            {/* LOGO */}
-
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-white/30">
-
               <Image
                 src="/botijao.jpg"
                 alt="JM GÁS"
@@ -259,7 +237,6 @@ export default function EntregaJM() {
                 height={48}
                 className="h-full w-full object-contain"
               />
-
             </div>
 
             <div>
@@ -275,7 +252,6 @@ export default function EntregaJM() {
                 Entregas em andamento
               </p>
             </div>
-
           </div>
 
           <button
@@ -285,9 +261,7 @@ export default function EntregaJM() {
           >
             Sair
           </button>
-
         </div>
-
       </header>
 
       {/* ========================= */}
@@ -295,11 +269,9 @@ export default function EntregaJM() {
       {/* ========================= */}
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
-
-        {/* RESUMO */}
+        {/* CABEÇALHO DA PÁGINA */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
           <div>
             <p className="text-sm font-black uppercase tracking-wider text-red-600">
               Painel do entregador
@@ -310,7 +282,7 @@ export default function EntregaJM() {
             </h2>
 
             <p className="mt-1 max-w-xl text-sm text-zinc-500">
-              Confira o endereço, os produtos e abra a rota.
+              Confira os dados do cliente, o endereço e os produtos.
             </p>
           </div>
 
@@ -323,14 +295,12 @@ export default function EntregaJM() {
               {pedidos.length}
             </p>
           </div>
-
         </div>
 
         {/* CARREGANDO */}
 
         {carregando && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
-
             <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
               <Image
                 src="/botijao.jpg"
@@ -348,115 +318,151 @@ export default function EntregaJM() {
             <p className="mt-1 text-sm text-zinc-500">
               Buscando pedidos em andamento.
             </p>
-
           </div>
         )}
 
         {/* NENHUMA ENTREGA */}
 
-        {!carregando &&
-          pedidos.length === 0 && (
-            <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
-
-              <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
-                <Image
-                  src="/botijao.jpg"
-                  alt="JM GÁS"
-                  width={80}
-                  height={80}
-                  className="h-full w-full object-contain p-2"
-                />
-              </div>
-
-              <h3 className="mt-5 text-xl font-black text-zinc-900">
-                Tudo tranquilo por aqui
-              </h3>
-
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
-                Não há nenhuma entrega em andamento no momento.
-                Quando um pedido for encaminhado para entrega,
-                ele aparecerá aqui.
-              </p>
-
+        {!carregando && pedidos.length === 0 && (
+          <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
+              <Image
+                src="/botijao.jpg"
+                alt="JM GÁS"
+                width={80}
+                height={80}
+                className="h-full w-full object-contain p-2"
+              />
             </div>
-          )}
 
-        {/* ENTREGAS */}
+            <h3 className="mt-5 text-xl font-black text-zinc-900">
+              Tudo tranquilo por aqui
+            </h3>
 
-        {!carregando &&
-          pedidos.length > 0 && (
-            <div className="space-y-5">
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
+              Não há nenhuma entrega em andamento no momento.
+            </p>
+          </div>
+        )}
 
-              {pedidos.map((pedido) => {
-                const gas = quantidade(pedido.gas);
-                const agua = quantidade(pedido.agua);
+        {/* LISTA DE ENTREGAS */}
 
-                const bloqueado =
-                  atualizando === pedido.id;
+        {!carregando && pedidos.length > 0 && (
+          <div className="space-y-5">
+            {pedidos.map((pedido) => {
+              const gas = quantidade(pedido.gas);
+              const agua = quantidade(pedido.agua);
+              const bloqueado =
+                atualizando === pedido.id;
 
-                return (
-                  <article
-                    key={pedido.id}
-                    className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
-                  >
+              return (
+                <article
+                  key={pedido.id}
+                  className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
+                >
+                  {/* CABEÇALHO DO PEDIDO */}
 
-                    {/* TOPO DO PEDIDO */}
+                  <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
+                          Pedido #{pedido.id}
+                        </p>
 
-                    <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
+                        <h3 className="mt-1 text-2xl font-black text-zinc-950">
+                          {pedido.nome}
+                        </h3>
 
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-                        <div>
-                          <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
-                            Pedido #{pedido.id}
-                          </p>
-
-                          <h3 className="mt-1 text-2xl font-black text-zinc-950">
-                            {pedido.nome}
-                          </h3>
-
-                          {pedido.whatsapp && (
-                            <a
-                              href={`https://wa.me/${pedido.whatsapp.replace(
+                        {pedido.whatsapp && (
+                          <a
+                            href={
+                              "https://wa.me/" +
+                              pedido.whatsapp.replace(
                                 /\D/g,
                                 ""
-                              )}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mt-2 inline-flex text-sm font-bold text-green-600 hover:text-green-700"
-                            >
-                              📱 {pedido.whatsapp}
-                            </a>
-                          )}
-                        </div>
-
-                        <div className="rounded-2xl bg-red-50 px-4 py-3 ring-1 ring-red-100">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-red-500">
-                            Status
-                          </p>
-
-                          <p className="mt-1 text-sm font-black text-red-700">
-                            EM ENTREGA
-                          </p>
-                        </div>
-
+                              )
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 inline-flex text-sm font-bold text-green-600 hover:text-green-700"
+                          >
+                            📱 {pedido.whatsapp}
+                          </a>
+                        )}
                       </div>
 
+                      <div className="rounded-2xl bg-blue-50 px-4 py-3 ring-1 ring-blue-100">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-blue-500">
+                          Status
+                        </p>
+
+                        <p className="mt-1 text-sm font-black text-blue-700">
+                          EM ENTREGA
+                        </p>
+                      </div>
                     </div>
+                  </div>
 
-                    {/* CORPO */}
+                  {/* CORPO */}
 
-                    <div className="space-y-4 p-5 sm:p-6">
+                  <div className="space-y-5 p-5 sm:p-6">
+                    {/* DADOS DO CLIENTE */}
 
-                      {/* ENDEREÇO */}
+                    <section className="overflow-hidden rounded-2xl border border-zinc-200">
+                      <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-zinc-500">
+                          Dados do cliente
+                        </p>
+                      </div>
 
-                      <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+                      <div className="grid gap-4 p-4 sm:grid-cols-2">
+                        <div>
+                          <p className="text-xs font-bold uppercase text-zinc-400">
+                            Nome
+                          </p>
 
-                        <div className="flex items-center justify-between gap-3">
+                          <p className="mt-1 text-base font-black text-zinc-900">
+                            {pedido.nome}
+                          </p>
+                        </div>
 
+                        <div>
+                          <p className="text-xs font-bold uppercase text-zinc-400">
+                            WhatsApp
+                          </p>
+
+                          <a
+                            href={
+                              "https://wa.me/" +
+                              pedido.whatsapp.replace(
+                                /\D/g,
+                                ""
+                              )
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-block text-base font-black text-green-600 hover:text-green-700"
+                          >
+                            {pedido.whatsapp}
+                          </a>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* ENDEREÇO */}
+
+                    <section className="overflow-hidden rounded-2xl border border-red-100">
+                      <div className="border-b border-red-100 bg-red-50 px-4 py-3">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
+                          Endereço de entrega
+                        </p>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="space-y-4">
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-wider text-zinc-400">
-                              Endereço de entrega
+                            <p className="text-xs font-bold uppercase text-zinc-400">
+                              Rua e número
                             </p>
 
                             <p className="mt-1 text-lg font-black text-zinc-950">
@@ -465,137 +471,145 @@ export default function EntregaJM() {
                             </p>
                           </div>
 
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-                            <Image
-                              src="/botijao.jpg"
-                              alt=""
-                              width={40}
-                              height={40}
-                              className="h-full w-full object-contain p-1"
-                            />
-                          </div>
-
-                        </div>
-
-                        <div className="mt-3 space-y-1 text-sm">
-
                           {pedido.complemento && (
-                            <p className="font-medium text-zinc-600">
-                              {pedido.complemento}
-                            </p>
+                            <div>
+                              <p className="text-xs font-bold uppercase text-zinc-400">
+                                Complemento
+                              </p>
+
+                              <p className="mt-1 text-sm font-semibold text-zinc-700">
+                                {pedido.complemento}
+                              </p>
+                            </div>
                           )}
 
-                          <p className="text-zinc-600">
-                            {pedido.bairro}
-                          </p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <p className="text-xs font-bold uppercase text-zinc-400">
+                                Bairro
+                              </p>
 
-                          <p className="text-zinc-600">
-                            {pedido.cidade} -{" "}
-                            {pedido.estado}
-                          </p>
+                              <p className="mt-1 text-sm font-semibold text-zinc-700">
+                                {pedido.bairro}
+                              </p>
+                            </div>
 
-                          <p className="font-semibold text-zinc-500">
-                            CEP {pedido.cep}
-                          </p>
+                            <div>
+                              <p className="text-xs font-bold uppercase text-zinc-400">
+                                Cidade
+                              </p>
 
+                              <p className="mt-1 text-sm font-semibold text-zinc-700">
+                                {pedido.cidade}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-bold uppercase text-zinc-400">
+                                Estado
+                              </p>
+
+                              <p className="mt-1 text-sm font-semibold text-zinc-700">
+                                {pedido.estado}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-bold uppercase text-zinc-400">
+                                CEP
+                              </p>
+
+                              <p className="mt-1 text-sm font-semibold text-zinc-700">
+                                {pedido.cep}
+                              </p>
+                            </div>
+                          </div>
                         </div>
+                      </div>
+                    </section>
 
-                      </section>
+                    {/* PRODUTOS */}
 
-                      {/* PRODUTOS */}
-
-                      <section className="rounded-2xl border border-red-100 bg-red-50 p-4">
-
-                        <p className="text-[11px] font-black uppercase tracking-wider text-red-500">
+                    <section className="overflow-hidden rounded-2xl border border-zinc-200">
+                      <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-zinc-500">
                           Produtos
                         </p>
+                      </div>
 
-                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-
-                          {/* GÁS */}
-
-                          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-red-100">
-
-                            <div className="flex items-center gap-3">
-
-                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-red-50">
-                                <Image
-                                  src="/botijao.jpg"
-                                  alt="Botijão"
-                                  width={56}
-                                  height={56}
-                                  className="h-full w-full object-contain"
-                                />
-                              </div>
-
-                              <div>
-                                <p className="text-xs font-bold text-zinc-500">
-                                  Botijão de cozinha
-                                </p>
-
-                                <p className="mt-1 text-2xl font-black text-zinc-950">
-                                  {gas}x
-                                </p>
-                              </div>
-
+                      <div className="grid gap-3 p-4 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white">
+                              <Image
+                                src="/botijao.jpg"
+                                alt="Botijão"
+                                width={56}
+                                height={56}
+                                className="h-full w-full object-contain"
+                              />
                             </div>
 
-                          </div>
+                            <div>
+                              <p className="text-xs font-bold text-zinc-500">
+                                Botijão de cozinha
+                              </p>
 
-                          {/* ÁGUA */}
-
-                          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100">
-
-                            <div className="flex items-center gap-3">
-
-                              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-blue-50">
-                                <Image
-                                  src="/agua.jpg"
-                                  alt="Água"
-                                  width={56}
-                                  height={56}
-                                  className="h-full w-full object-contain"
-                                />
-                              </div>
-
-                              <div>
-                                <p className="text-xs font-bold text-zinc-500">
-                                  Água
-                                </p>
-
-                                <p className="mt-1 text-2xl font-black text-zinc-950">
-                                  {agua}x
-                                </p>
-                              </div>
-
+                              <p className="mt-1 text-2xl font-black text-zinc-950">
+                                {gas}x
+                              </p>
                             </div>
-
                           </div>
-
                         </div>
 
-                      </section>
+                        <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white">
+                              <Image
+                                src="/agua.jpg"
+                                alt="Água"
+                                width={56}
+                                height={56}
+                                className="h-full w-full object-contain"
+                              />
+                            </div>
 
-                      {/* OBSERVAÇÃO */}
+                            <div>
+                              <p className="text-xs font-bold text-zinc-500">
+                                Água
+                              </p>
 
-                      {pedido.observacao && (
-                        <section className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
+                              <p className="mt-1 text-2xl font-black text-zinc-950">
+                                {agua}x
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
 
+                    {/* OBSERVAÇÃO */}
+
+                    {pedido.observacao && (
+                      <section className="overflow-hidden rounded-2xl border border-yellow-200">
+                        <div className="border-b border-yellow-200 bg-yellow-50 px-4 py-3">
                           <p className="text-[11px] font-black uppercase tracking-wider text-yellow-600">
                             Observação do cliente
                           </p>
+                        </div>
 
-                          <p className="mt-2 text-sm leading-6 text-zinc-700">
+                        <div className="bg-yellow-50/60 p-4">
+                          <p className="text-sm leading-6 text-zinc-700">
                             {pedido.observacao}
                           </p>
+                        </div>
+                      </section>
+                    )}
 
-                        </section>
-                      )}
+                    {/* AÇÕES */}
 
-                      {/* BOTÕES */}
-
-                      <div className="grid gap-3 pt-1 sm:grid-cols-2">
-
+                    <section className="border-t border-zinc-100 pt-5">
+                      <div className="grid gap-3 sm:grid-cols-2">
                         <button
                           type="button"
                           onClick={() =>
@@ -603,11 +617,7 @@ export default function EntregaJM() {
                           }
                           className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
                         >
-                          <span className="text-xl">
-                            📍
-                          </span>
-
-                          ABRIR ROTA
+                          📍 ABRIR ROTA
                         </button>
 
                         <button
@@ -620,28 +630,18 @@ export default function EntregaJM() {
                           }
                           className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <span className="text-xl">
-                            {bloqueado
-                              ? "⏳"
-                              : "✅"}
-                          </span>
-
                           {bloqueado
                             ? "ATUALIZANDO..."
-                            : "PEDIDO ENTREGUE"}
+                            : "✅ PEDIDO ENTREGUE"}
                         </button>
-
                       </div>
-
-                    </div>
-
-                  </article>
-                );
-              })}
-
-            </div>
-          )}
-
+                    </section>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <footer className="px-4 pb-8 pt-2 text-center">
@@ -649,7 +649,7 @@ export default function EntregaJM() {
           ENTREGA JM · Operação JM GÁS
         </p>
       </footer>
-
     </main>
   );
 }
+```
