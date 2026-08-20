@@ -29,7 +29,6 @@ export default function EntregaJM() {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState<number | null>(null);
   const [verificandoLogin, setVerificandoLogin] = useState(true);
-  const [abrindoRota, setAbrindoRota] = useState<number | null>(null);
 
   // =========================
   // LOGIN
@@ -167,160 +166,14 @@ export default function EntregaJM() {
       return;
     }
 
-    setAbrindoRota(pedido.id);
-
     const destino = encodeURIComponent(endereco.trim());
 
-    /*
-     * A janela é aberta imediatamente pelo clique.
-     * Isso evita bloqueio de popup enquanto esperamos o GPS.
-     */
-    const novaAba = window.open(
-      "",
-      "_blank",
-      "noopener,noreferrer"
-    );
+    const url =
+      `https://www.google.com/maps/dir/?api=1` +
+      `&destination=${destino}` +
+      `&travelmode=driving`;
 
-    if (!novaAba) {
-      setAbrindoRota(null);
-
-      alert(
-        "O navegador bloqueou a abertura do Google Maps. Permita pop-ups para este site e tente novamente."
-      );
-
-      return;
-    }
-
-    /*
-     * Depois dessa verificação, "aba" é garantidamente
-     * uma janela válida para o TypeScript.
-     */
-    const aba = novaAba;
-
-    /*
-     * Tela temporária enquanto o GPS é obtido.
-     */
-    try {
-      aba.document.title = "JM GÁS - Abrindo rota";
-
-      aba.document.body.innerHTML = `
-        <div style="
-          font-family: Arial, sans-serif;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-          margin: 0;
-          padding: 20px;
-          background: #f4f4f5;
-          color: #18181b;
-          text-align: center;
-        ">
-          <div style="
-            width: 90%;
-            max-width: 420px;
-            padding: 30px;
-          ">
-            <div style="
-              font-size: 48px;
-              margin-bottom: 18px;
-            ">
-              📍
-            </div>
-
-            <h2 style="
-              margin: 0 0 10px;
-              font-size: 24px;
-            ">
-              Abrindo rota...
-            </h2>
-
-            <p style="
-              margin: 0;
-              color: #71717a;
-              line-height: 1.5;
-            ">
-              Obtendo a localização do entregador.
-            </p>
-          </div>
-        </div>
-      `;
-    } catch {
-      // Continua normalmente caso o navegador impeça
-      // acesso ao documento da nova aba.
-    }
-
-    // =========================
-    // FUNÇÃO PARA ABRIR MAPS
-    // =========================
-
-    function abrirMaps(url: string) {
-      aba.location.href = url;
-      setAbrindoRota(null);
-    }
-
-    // =========================
-    // SEM GEOLOCALIZAÇÃO
-    // =========================
-
-    if (!navigator.geolocation) {
-      const url =
-        `https://www.google.com/maps/dir/?api=1` +
-        `&destination=${destino}` +
-        `&travelmode=driving`;
-
-      abrirMaps(url);
-      return;
-    }
-
-    // =========================
-    // PEGAR LOCALIZAÇÃO DO MOTOBOY
-    // =========================
-
-    navigator.geolocation.getCurrentPosition(
-      (posicao) => {
-        const latitude = posicao.coords.latitude;
-        const longitude = posicao.coords.longitude;
-
-        /*
-         * A localização real do aparelho vira
-         * a origem da rota.
-         */
-        const origem = `${latitude},${longitude}`;
-
-        const url =
-          `https://www.google.com/maps/dir/?api=1` +
-          `&origin=${encodeURIComponent(origem)}` +
-          `&destination=${destino}` +
-          `&travelmode=driving`;
-
-        abrirMaps(url);
-      },
-
-      (erro) => {
-        console.warn(
-          "Não foi possível obter a localização do entregador:",
-          erro
-        );
-
-        /*
-         * FALLBACK:
-         * abre o Google Maps somente com o destino.
-         */
-        const url =
-          `https://www.google.com/maps/dir/?api=1` +
-          `&destination=${destino}` +
-          `&travelmode=driving`;
-
-        abrirMaps(url);
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 30000,
-      }
-    );
+    window.open(url, "_blank");
   }
 
   // =========================
@@ -505,7 +358,6 @@ export default function EntregaJM() {
               const gas = quantidade(pedido.gas);
               const agua = quantidade(pedido.agua);
               const bloqueado = atualizando === pedido.id;
-              const rotaAbrindo = abrindoRota === pedido.id;
 
               return (
                 <article
@@ -763,13 +615,10 @@ export default function EntregaJM() {
                       <div className="grid gap-3 sm:grid-cols-2">
                         <button
                           type="button"
-                          disabled={rotaAbrindo}
                           onClick={() => abrirRota(pedido)}
-                          className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
                         >
-                          {rotaAbrindo
-                            ? "📍 ABRINDO MAPA..."
-                            : "📍 ABRIR ROTA"}
+                          📍 ABRIR ROTA
                         </button>
 
                         <button
