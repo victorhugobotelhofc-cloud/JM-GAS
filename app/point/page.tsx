@@ -117,9 +117,7 @@ export default function EntregaJM() {
     if (error) {
       console.error("Erro ao atualizar pedido:", error);
 
-      alert(
-        `Não foi possível atualizar o pedido: ${error.message}`
-      );
+      alert(`Não foi possível atualizar o pedido: ${error.message}`);
 
       setAtualizando(null);
       return;
@@ -277,7 +275,7 @@ export default function EntregaJM() {
       {/* ========================= */}
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
-        {/* CABEÇALHO DA PÁGINA */}
+        {/* CABEÇALHO */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
