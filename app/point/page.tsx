@@ -155,28 +155,6 @@ export default function EntregaJM() {
   }
 
   // =========================
-  // ABRIR GOOGLE MAPS
-  // =========================
-
-  function abrirRota(pedido: Pedido) {
-    const endereco = montarEndereco(pedido);
-
-    if (!endereco || endereco.trim() === "") {
-      alert("O endereço deste pedido está vazio.");
-      return;
-    }
-
-    const destino = encodeURIComponent(endereco.trim());
-
-    const url =
-      `https://www.google.com/maps/dir/?api=1` +
-      `&destination=${destino}` +
-      `&travelmode=driving`;
-
-    window.open(url, "_blank");
-  }
-
-  // =========================
   // SAIR
   // =========================
 
@@ -358,6 +336,13 @@ export default function EntregaJM() {
               const gas = quantidade(pedido.gas);
               const agua = quantidade(pedido.agua);
               const bloqueado = atualizando === pedido.id;
+
+              const endereco = montarEndereco(pedido);
+
+              const urlGoogleMaps =
+                `https://www.google.com/maps/dir/?api=1` +
+                `&destination=${encodeURIComponent(endereco)}` +
+                `&travelmode=driving`;
 
               return (
                 <article
@@ -613,13 +598,14 @@ export default function EntregaJM() {
 
                     <section className="border-t border-zinc-100 pt-5">
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <button
-                          type="button"
-                          onClick={() => abrirRota(pedido)}
+                        <a
+                          href={urlGoogleMaps}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-4 font-black text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
                         >
                           📍 ABRIR ROTA
-                        </button>
+                        </a>
 
                         <button
                           type="button"
