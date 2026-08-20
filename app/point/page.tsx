@@ -1,4 +1,3 @@
-```tsx
 "use client";
 
 import Image from "next/image";
@@ -102,7 +101,7 @@ export default function EntregaJM() {
   }, [verificandoLogin]);
 
   // =========================
-  // MARCAR COMO ENTREGUE
+  // ENTREGAR PEDIDO
   // =========================
 
   async function marcarEntregue(id: number) {
@@ -119,8 +118,7 @@ export default function EntregaJM() {
       console.error("Erro ao atualizar pedido:", error);
 
       alert(
-        "Não foi possível atualizar o pedido: " +
-          error.message
+        `Não foi possível atualizar o pedido: ${error.message}`
       );
 
       setAtualizando(null);
@@ -147,9 +145,7 @@ export default function EntregaJM() {
       pedido.cidade,
       pedido.estado,
       pedido.cep,
-    ].filter((parte) => {
-      return parte !== null && String(parte).trim() !== "";
-    });
+    ].filter((parte) => Boolean(parte?.trim?.() || parte));
 
     return partes.join(", ");
   }
@@ -169,15 +165,10 @@ export default function EntregaJM() {
     const destino = encodeURIComponent(endereco);
 
     const url =
-      "https://www.google.com/maps/dir/?api=1" +
-      "&destination=" +
-      destino;
+      `https://www.google.com/maps/dir/?api=1` +
+      `&destination=${destino}`;
 
-    window.open(
-      url,
-      "_blank",
-      "noopener,noreferrer"
-    );
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   // =========================
@@ -195,21 +186,17 @@ export default function EntregaJM() {
 
   function quantidade(valor: number | string | null) {
     const numero = Number(valor);
-
-    return Number.isFinite(numero)
-      ? numero
-      : 0;
+    return Number.isFinite(numero) ? numero : 0;
   }
 
   // =========================
-  // LOGIN
+  // TELA DE LOGIN
   // =========================
 
   if (verificandoLogin) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
-
           <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-red-50">
             <Image
               src="/botijao.jpg"
@@ -227,7 +214,6 @@ export default function EntregaJM() {
           <p className="mt-2 text-sm text-zinc-500">
             Verificando acesso...
           </p>
-
         </div>
       </main>
     );
@@ -235,15 +221,13 @@ export default function EntregaJM() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-
+      {/* ========================= */}
       {/* BARRA FIXA */}
+      {/* ========================= */}
 
       <header className="fixed inset-x-0 top-0 z-50 h-[132px] border-b border-red-900/30 bg-red-700 text-white shadow-lg">
-
         <div className="mx-auto flex h-full max-w-4xl items-center justify-between gap-4 px-4 sm:px-6">
-
           <div className="flex items-center gap-3">
-
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-white/30">
               <Image
                 src="/botijao.jpg"
@@ -255,7 +239,6 @@ export default function EntregaJM() {
             </div>
 
             <div>
-
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-red-100">
                 JM GÁS
               </p>
@@ -267,9 +250,7 @@ export default function EntregaJM() {
               <p className="text-xs text-red-100">
                 Entregas em andamento
               </p>
-
             </div>
-
           </div>
 
           <button
@@ -279,19 +260,18 @@ export default function EntregaJM() {
           >
             Sair
           </button>
-
         </div>
-
       </header>
 
+      {/* ========================= */}
       {/* CONTEÚDO */}
+      {/* ========================= */}
 
       <div className="mx-auto max-w-4xl px-4 pb-8 pt-[156px] sm:px-6">
+        {/* CABEÇALHO DA PÁGINA */}
 
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
           <div>
-
             <p className="text-sm font-black uppercase tracking-wider text-red-600">
               Painel do entregador
             </p>
@@ -303,11 +283,9 @@ export default function EntregaJM() {
             <p className="mt-1 max-w-xl text-sm text-zinc-500">
               Confira os dados do cliente, o endereço e os produtos.
             </p>
-
           </div>
 
           <div className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-zinc-200">
-
             <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
               Em andamento
             </p>
@@ -315,16 +293,13 @@ export default function EntregaJM() {
             <p className="mt-1 text-2xl font-black text-red-600">
               {pedidos.length}
             </p>
-
           </div>
-
         </div>
 
         {/* CARREGANDO */}
 
         {carregando && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
-
             <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center overflow-hidden rounded-2xl bg-red-50">
               <Image
                 src="/botijao.jpg"
@@ -342,7 +317,6 @@ export default function EntregaJM() {
             <p className="mt-1 text-sm text-zinc-500">
               Buscando pedidos em andamento.
             </p>
-
           </div>
         )}
 
@@ -350,7 +324,6 @@ export default function EntregaJM() {
 
         {!carregando && pedidos.length === 0 && (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-zinc-200">
-
             <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-red-50">
               <Image
                 src="/botijao.jpg"
@@ -368,15 +341,13 @@ export default function EntregaJM() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">
               Não há nenhuma entrega em andamento no momento.
             </p>
-
           </div>
         )}
 
-        {/* PEDIDOS */}
+        {/* LISTA DE ENTREGAS */}
 
         {!carregando && pedidos.length > 0 && (
           <div className="space-y-5">
-
             {pedidos.map((pedido) => {
               const gas = quantidade(pedido.gas);
               const agua = quantidade(pedido.agua);
@@ -388,15 +359,11 @@ export default function EntregaJM() {
                   key={pedido.id}
                   className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200"
                 >
-
-                  {/* CABEÇALHO */}
+                  {/* CABEÇALHO DO PEDIDO */}
 
                   <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-5 sm:px-6">
-
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
                       <div>
-
                         <p className="text-xs font-black uppercase tracking-wider text-zinc-400">
                           Pedido #{pedido.id}
                         </p>
@@ -421,11 +388,9 @@ export default function EntregaJM() {
                             📱 {pedido.whatsapp}
                           </a>
                         )}
-
                       </div>
 
                       <div className="rounded-2xl bg-blue-50 px-4 py-3 ring-1 ring-blue-100">
-
                         <p className="text-[10px] font-black uppercase tracking-wider text-blue-500">
                           Status
                         </p>
@@ -433,33 +398,24 @@ export default function EntregaJM() {
                         <p className="mt-1 text-sm font-black text-blue-700">
                           EM ENTREGA
                         </p>
-
                       </div>
-
                     </div>
-
                   </div>
 
                   {/* CORPO */}
 
                   <div className="space-y-5 p-5 sm:p-6">
-
-                    {/* DADOS */}
+                    {/* DADOS DO CLIENTE */}
 
                     <section className="overflow-hidden rounded-2xl border border-zinc-200">
-
                       <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
-
                         <p className="text-[11px] font-black uppercase tracking-wider text-zinc-500">
                           Dados do cliente
                         </p>
-
                       </div>
 
                       <div className="grid gap-4 p-4 sm:grid-cols-2">
-
                         <div>
-
                           <p className="text-xs font-bold uppercase text-zinc-400">
                             Nome
                           </p>
@@ -467,11 +423,9 @@ export default function EntregaJM() {
                           <p className="mt-1 text-base font-black text-zinc-900">
                             {pedido.nome}
                           </p>
-
                         </div>
 
                         <div>
-
                           <p className="text-xs font-bold uppercase text-zinc-400">
                             WhatsApp
                           </p>
@@ -490,29 +444,21 @@ export default function EntregaJM() {
                           >
                             {pedido.whatsapp}
                           </a>
-
                         </div>
-
                       </div>
-
                     </section>
 
                     {/* ENDEREÇO */}
 
                     <section className="overflow-hidden rounded-2xl border border-red-100">
-
                       <div className="border-b border-red-100 bg-red-50 px-4 py-3">
-
                         <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
                           Endereço de entrega
                         </p>
-
                       </div>
 
                       <div className="p-4">
-
                         <div className="space-y-4">
-
                           <div>
                             <p className="text-xs font-bold uppercase text-zinc-400">
                               Rua e número
@@ -537,7 +483,6 @@ export default function EntregaJM() {
                           )}
 
                           <div className="grid gap-3 sm:grid-cols-2">
-
                             <div>
                               <p className="text-xs font-bold uppercase text-zinc-400">
                                 Bairro
@@ -577,35 +522,24 @@ export default function EntregaJM() {
                                 {pedido.cep}
                               </p>
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </section>
 
                     {/* PRODUTOS */}
 
                     <section className="overflow-hidden rounded-2xl border border-zinc-200">
-
                       <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
-
                         <p className="text-[11px] font-black uppercase tracking-wider text-zinc-500">
                           Produtos
                         </p>
-
                       </div>
 
                       <div className="grid gap-3 p-4 sm:grid-cols-2">
-
                         <div className="rounded-2xl border border-red-100 bg-red-50 p-4">
-
                           <div className="flex items-center gap-3">
-
                             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white">
-
                               <Image
                                 src="/botijao.jpg"
                                 alt="Botijão"
@@ -613,11 +547,9 @@ export default function EntregaJM() {
                                 height={56}
                                 className="h-full w-full object-contain"
                               />
-
                             </div>
 
                             <div>
-
                               <p className="text-xs font-bold text-zinc-500">
                                 Botijão de cozinha
                               </p>
@@ -625,19 +557,13 @@ export default function EntregaJM() {
                               <p className="mt-1 text-2xl font-black text-zinc-950">
                                 {gas}x
                               </p>
-
                             </div>
-
                           </div>
-
                         </div>
 
                         <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
-
                           <div className="flex items-center gap-3">
-
                             <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white">
-
                               <Image
                                 src="/agua.jpg"
                                 alt="Água"
@@ -645,11 +571,9 @@ export default function EntregaJM() {
                                 height={56}
                                 className="h-full w-full object-contain"
                               />
-
                             </div>
 
                             <div>
-
                               <p className="text-xs font-bold text-zinc-500">
                                 Água
                               </p>
@@ -657,47 +581,34 @@ export default function EntregaJM() {
                               <p className="mt-1 text-2xl font-black text-zinc-950">
                                 {agua}x
                               </p>
-
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </section>
 
                     {/* OBSERVAÇÃO */}
 
                     {pedido.observacao && (
                       <section className="overflow-hidden rounded-2xl border border-yellow-200">
-
                         <div className="border-b border-yellow-200 bg-yellow-50 px-4 py-3">
-
                           <p className="text-[11px] font-black uppercase tracking-wider text-yellow-600">
                             Observação do cliente
                           </p>
-
                         </div>
 
                         <div className="bg-yellow-50/60 p-4">
-
                           <p className="text-sm leading-6 text-zinc-700">
                             {pedido.observacao}
                           </p>
-
                         </div>
-
                       </section>
                     )}
 
                     {/* AÇÕES */}
 
                     <section className="border-t border-zinc-100 pt-5">
-
                       <div className="grid gap-3 sm:grid-cols-2">
-
                         <button
                           type="button"
                           onClick={() =>
@@ -722,31 +633,21 @@ export default function EntregaJM() {
                             ? "ATUALIZANDO..."
                             : "✅ PEDIDO ENTREGUE"}
                         </button>
-
                       </div>
-
                     </section>
-
                   </div>
-
                 </article>
               );
             })}
-
           </div>
         )}
-
       </div>
 
       <footer className="px-4 pb-8 pt-2 text-center">
-
         <p className="text-xs font-medium text-zinc-400">
           ENTREGA JM · Operação JM GÁS
         </p>
-
       </footer>
-
     </main>
   );
 }
-```
